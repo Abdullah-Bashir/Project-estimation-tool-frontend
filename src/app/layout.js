@@ -1,7 +1,7 @@
 import ClientProviders from "./components/clientProvider";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script"; // ✅ Import Script properly
 import "./globals.css";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,11 +19,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  <script src="https://cdn.lordicon.com/lordicon.js"></script>
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Theme switching script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -42,6 +41,9 @@ export default function RootLayout({ children }) {
           {children}
           <div id="modal-root" />
         </ClientProviders>
+
+        {/* ✅ Load lordicon properly */}
+        <Script src="https://cdn.lordicon.com/lordicon.js" strategy="afterInteractive" />
       </body>
     </html>
   );
