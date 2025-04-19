@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Book Mart",
-  description: "Library system where you can find any book you want.",
+  title: "Project Manager",
+  description: "Tool to manage large projects",
 };
 
 export default function RootLayout({ children }) {
