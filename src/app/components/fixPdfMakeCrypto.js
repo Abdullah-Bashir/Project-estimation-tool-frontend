@@ -1,10 +1,17 @@
 // components/fixPdfMakeCrypto.js
-if (typeof window !== "undefined") {
+import { Buffer } from 'buffer';
+import { createHash } from 'crypto-browserify';
+
+if (typeof window !== 'undefined') {
+    window.Buffer = Buffer;
     window.crypto = {
-        getRandomValues: (buffer) => {
-            const bytes = crypto.randomBytes(buffer.length);
-            buffer.set(bytes);
-            return buffer;
+        getRandomValues: (arr) => crypto.getRandomValues(arr),
+        subtle: {
+            digest: (algorithm, data) => {
+                const hash = createHash(algorithm.toLowerCase().replace('-', ''));
+                hash.update(Buffer.from(data));
+                return Promise.resolve(hash.digest());
+            }
         }
     };
 }
