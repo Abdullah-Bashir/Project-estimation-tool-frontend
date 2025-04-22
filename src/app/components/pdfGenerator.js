@@ -1,8 +1,14 @@
-import pdfMake from "pdfmake/build/pdfmake.min.js"; // ✅ CORRECT
-import pdfFonts from "pdfmake/build/vfs_fonts.js";   // ✅ CORRECT
+// components/pdfGenerator.js
+"use client";
+
+// 🛠 Import crypto fix FIRST
+import "../components/fixPdfMakeCrypto";
+
+import pdfMake from "pdfmake/build/pdfmake.min.js";
+import pdfFonts from "pdfmake/build/vfs_fonts.js";
 import { getBase64ImageFromUrl } from "../components/base64Image";
 
-pdfMake.vfs = pdfFonts.vfs; // ✅ CORRECT
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
@@ -21,7 +27,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     const methodology = localStorage.getItem("methodology") || "N/A";
     const pillar = localStorage.getItem("pillar") || "N/A";
     const email = localStorage.getItem("email") || "N/A";
-    const projectName = localStorage.getItem("projectName") || "Project Name"; // 🔥 dynamic project name
+    const projectName = localStorage.getItem("projectName") || "Project Name";
 
     const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
     const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
@@ -48,7 +54,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
             {
                 margin: [40, 0, 40, 0],
                 stack: [
-                    { text: projectName, style: 'projectNameHeader' }, // 🔥 dynamic
+                    { text: projectName, style: 'projectNameHeader' },
                     { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
                     { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
 
