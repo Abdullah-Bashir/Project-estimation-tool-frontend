@@ -1,15 +1,3 @@
-// components/pdfGenerator.js
-"use client";
-
-// 🛠 Import crypto fix FIRST
-import "../components/fixPdfMakeCrypto";
-
-import pdfMake from "pdfmake/build/pdfmake.min.js";
-import pdfFonts from "pdfmake/build/vfs_fonts.js";
-import { getBase64ImageFromUrl } from "../components/base64Image";
-
-pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
-
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
         alert("No tasks to export!");
@@ -20,6 +8,12 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
         alert("Please calculate rock size first!");
         return;
     }
+
+    // 🛠 Dynamic import here
+    const pdfMakeModule = await import("pdfmake/build/pdfmake.min.js");
+    const pdfFonts = await import("pdfmake/build/vfs_fonts.js");
+    const pdfMake = pdfMakeModule.default;
+    pdfMake.vfs = pdfFonts.default ? pdfFonts.default.vfs : pdfFonts.vfs;
 
     const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
@@ -57,7 +51,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     { text: projectName, style: 'projectNameHeader' },
                     { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
                     { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
-
                     { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
                     {
                         table: {
