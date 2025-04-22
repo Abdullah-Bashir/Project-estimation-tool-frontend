@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown, AlertCircle } from "lucide-react";
-import { generatePdf } from "../components/pdfGenerator";
 import { generateExcel } from "../components/excelGenerator";
 
 
@@ -95,10 +94,14 @@ export default function Reports() {
                     <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
                         <button
                             className="flex items-center gap-2 bg-[#003399] hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
-                            onClick={() => generatePdf(tasks, rockSize, useCase)}
+                            onClick={async () => {
+                                const { generatePdf } = await import("../components/pdfGenerator");
+                                generatePdf(tasks, rockSize, useCase);
+                            }}
                         >
                             <FaFilePdf className="text-lg" /> Export PDF
                         </button>
+
 
                         <button
                             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
