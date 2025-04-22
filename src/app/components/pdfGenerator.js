@@ -2,7 +2,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { getBase64ImageFromUrl } from "../components/base64Image";
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+pdfMake.vfs = pdfFonts.vfs; // <<< THIS LINE IMPORTANT
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
@@ -10,7 +10,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
         return;
     }
 
-    if (!rockSize || useCase === "") {
+    if (!rockSize || !useCase) {
         alert("Please calculate rock size first!");
         return;
     }
@@ -21,6 +21,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     const methodology = localStorage.getItem("methodology") || "N/A";
     const pillar = localStorage.getItem("pillar") || "N/A";
     const email = localStorage.getItem("email") || "N/A";
+    const projectName = localStorage.getItem("projectName") || "Project Name";
 
     const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
     const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
@@ -42,31 +43,15 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     ]
                 },
                 layout: 'noBorders',
-                margin: [0, 0, 0, 20],
+                margin: [20, 0, 20, 20],
             },
             {
                 margin: [40, 0, 40, 0],
                 stack: [
-                    { text: 'Collaborative Rock Sizing Estimator', style: 'sectionHeaderBlack' },
-
-                    {
-                        margin: [0, 10, 0, 2],
-                        columns: [
-                            { width: 'auto', text: 'PREDICTED SIZE: ', style: 'predictedLabel' },
-                            { width: '*', text: rockSize, style: 'predictedValue' },
-                        ]
-                    },
-
-                    {
-                        text: [
-                            { text: "USE CASE CATEGORY: ", style: 'predictedLabel' },
-                            { text: useCase, style: 'predictedValue' },
-                        ],
-                        margin: [0, 0, 0, 10],
-                    },
-
+                    { text: projectName, style: 'projectNameHeader' },
+                    { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
+                    { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
                     { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
-
                     {
                         table: {
                             headerRows: 1,
@@ -101,7 +86,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                         },
                         margin: [0, 0, 0, 10],
                     },
-
                     {
                         columns: [
                             { text: '' },
@@ -114,9 +98,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                             }
                         ]
                     },
-
                     { text: '', margin: [0, 20, 0, 0] },
-
                     { text: `Capability: ${capability}`, style: 'infoText' },
                     { text: `Methodology: ${methodology}`, style: 'infoText' },
                     { text: `Pillar: ${pillar}`, style: 'infoText' },
@@ -132,20 +114,11 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                 alignment: 'center',
                 margin: [0, 0, 0, 5],
             },
-            sectionHeaderBlack: {
+            projectNameHeader: {
                 fontSize: 18,
                 bold: true,
                 color: '#000000',
                 marginBottom: 6,
-            },
-            predictedLabel: {
-                fontSize: 10,
-                bold: true,
-                color: '#003399',
-            },
-            predictedValue: {
-                fontSize: 10,
-                color: '#000000',
             },
             tasksHeader: {
                 fontSize: 14,
@@ -166,6 +139,11 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
             infoText: {
                 fontSize: 10,
                 margin: [0, 2],
+            },
+            infoSlim: {
+                fontSize: 10,
+                margin: [0, 0, 0, 2],
+                color: '#003399',
             },
         },
         images: {
