@@ -14,9 +14,13 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        // Import browser-safe pdfmake directly
-        const pdfMake = (await import('pdfmake/build/pdfmake')).default;
-        const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
+        // Import modules
+        const pdfMakeModule = await import('pdfmake/build/pdfmake.min.js');
+        const pdfFontsModule = await import('pdfmake/build/vfs_fonts.js');
+
+        // Correct module handling
+        const pdfMake = pdfMakeModule.default || pdfMakeModule;
+        const pdfFonts = pdfFontsModule.default || pdfFontsModule;
 
         pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
