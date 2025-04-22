@@ -1,36 +1,50 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import ModalRoot from "./modalRoot";
-import { X } from "lucide-react";
+import { useEffect, useState, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import ModalRoot from "./modalRoot"
+import { X, ChevronDown } from "lucide-react"
 
 const departmentOptions = [
-    "Claims", "Finance / Underwriting", "Healthcare Delivery", "Hospitality Rx", "HRT",
-    "Human Resources", "Informatics", "Information Technology", "Legal", "LV: Advocacy/Comms",
-    "LV: Hospitality", "LV: Network", "LV: NHS", "Medical Management", "New Membership / HIPAA",
-    "Office Services", "Operations", "PMO"
-];
+    "Claims",
+    "Finance / Underwriting",
+    "Healthcare Delivery",
+    "Hospitality Rx",
+    "HRT",
+    "Human Resources",
+    "Informatics",
+    "Information Technology",
+    "Legal",
+    "LV: Advocacy/Comms",
+    "LV: Hospitality",
+    "LV: Network",
+    "LV: NHS",
+    "Medical Management",
+    "New Membership / HIPAA",
+    "Office Services",
+    "Operations",
+    "PMO",
+]
 
 export default function EditTaskModal({ task, onClose, onSave }) {
-    const [updatedTask, setUpdatedTask] = useState(task);
-    const [isOpen, setIsOpen] = useState(false);
+    const [updatedTask, setUpdatedTask] = useState(task)
+    const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
-        setIsOpen(true);
-        document.body.classList.add("overflow-hidden");
+        setIsOpen(true)
+        document.body.classList.add("overflow-hidden")
         return () => {
-            document.body.classList.remove("overflow-hidden");
-            setIsOpen(false);
-        };
-    }, []);
+            document.body.classList.remove("overflow-hidden")
+            setIsOpen(false)
+        }
+    }, [])
 
-    if (!task) return null;
+    if (!task) return null
 
     const handleSave = () => {
-        onSave(updatedTask);
-        onClose();
-    };
+        onSave(updatedTask)
+        onClose()
+    }
 
     return (
         <ModalRoot>
@@ -90,12 +104,12 @@ export default function EditTaskModal({ task, onClose, onSave }) {
                                     onChange={(e) => setUpdatedTask({ ...updatedTask, title: e.target.value })}
                                 />
 
-                                {/* Department Dropdown */}
-                                <SelectField
+                                {/* Enhanced Department Dropdown */}
+                                <EnhancedSelectField
                                     label="Department"
                                     value={updatedTask.department}
                                     options={departmentOptions}
-                                    onChange={(e) => setUpdatedTask({ ...updatedTask, department: e.target.value })}
+                                    onChange={(value) => setUpdatedTask({ ...updatedTask, department: value })}
                                 />
 
                                 <InputField
@@ -168,21 +182,82 @@ const InputField = ({ label, ...props }) => (
     </div>
 )
 
-// 🔥 Reusable Select Field
-const SelectField = ({ label, options, value, onChange }) => (
-    <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</label>
-        <select
-            value={value}
-            onChange={onChange}
-            className="px-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500"
-        >
-            <option value="">Select {label}</option>
-            {options.map((option, idx) => (
-                <option key={idx} value={option}>
-                    {option}
-                </option>
-            ))}
-        </select>
-    </div>
-)
+// 🔥 Enhanced Select Field with Custom Dropdown
+const EnhancedSelectField = ({ label, options, value, onChange }) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const dropdownRef = useRef(null)
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
+
+    return (
+        <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</label>
+            <div className="relative" ref={dropdownRef}>
+                <motion.button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 flex justify-between items-center"
+                    whileHover={{ borderColor: "#818cf8" }}
+                    whileTap={{ scale: 0.98 }}
+                >
+                    <span className={value ? "text-gray-800 dark:text-gray-200" : "text-gray-400 dark:text-gray-500"}>
+                        {value || `Select ${label}`}
+                    </span>
+                    <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-300" />
+                    </motion.div>
+                </motion.button>
+
+                <AnimatePresence>
+                    {isDropdownOpen && (
+                        <motion.div
+                            className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                        >
+                            <ul className="py-1">
+                                {options.map((option, idx) => (
+                                    <motion.li
+                                        key={idx}
+                                        className="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
+                                        onClick={() => {
+                                            onChange(option)
+                                            setIsDropdownOpen(false)
+                                        }}
+                                        whileHover={{ backgroundColor: "#eef2ff", x: 2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        {option}
+                                    </motion.li>
+                                ))}
+                            </ul>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Hidden select for form submission */}
+                <select value={value} onChange={(e) => onChange(e.target.value)} className="sr-only" aria-hidden="true">
+                    <option value="">{`Select ${label}`}</option>
+                    {options.map((option, idx) => (
+                        <option key={idx} value={option}>
+                            {option}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        </div>
+    )
+}

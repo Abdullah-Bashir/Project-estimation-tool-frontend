@@ -21,6 +21,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+
       <head>
         {/* Theme switching script */}
         <script
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
             `,
           }}
         />
+
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClientProviders>

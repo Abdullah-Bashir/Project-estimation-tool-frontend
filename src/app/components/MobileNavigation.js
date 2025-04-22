@@ -108,7 +108,22 @@ export default function MobileNavigation({ activeTab, setActiveTab }) {
                             borderBottom: "1px solid var(--border)",
                         }}
                     >
-                        <h2 style={{ fontWeight: 600, fontSize: "18px" }}>Navigation</h2>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <img
+                                src="/logo.png"
+                                alt="App Logo"
+                                style={{ height: "28px", width: "auto" }}
+                            />
+                            <h2 style={{
+                                fontWeight: 600,
+                                fontSize: "15px",
+                                margin: 0,
+                                lineHeight: "1.2"
+                            }}>
+                                Project Estimation Tool
+                            </h2>
+                        </div>
+
                         <button
                             onClick={toggleSidebar}
                             style={{
@@ -224,7 +239,7 @@ export default function MobileNavigation({ activeTab, setActiveTab }) {
 }
 
 function NavItem({ children, label, isActive, onClick }) {
-    const activeColor = "#4f46e5"; // 🎨 beautiful Indigo color
+    const activeColor = "#4f46e5";
     const buttonStyle = {
         display: "flex",
         alignItems: "center",

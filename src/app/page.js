@@ -98,10 +98,14 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen py-4 flex flex-col items-center bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
+    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
+
+
+
       {/* Header */}
-      <div className="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center px-2 mb-6 gap-4">
+      <div className="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 py-2">
         <div className="flex items-center justify-between w-full">
+
           {/* Mobile Navigation */}
           <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -110,8 +114,9 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-1 w-full sm:max-w-xl"
+              className="flex w-full sm:max-w-xl  gap-2"
             >
+
               <input
                 type="text"
                 value={projectName}
@@ -127,9 +132,16 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-3 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-3 py-2 rounded-lg transition-colors w-full sm:w-auto"
+              className="flex items-center justify-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors w-full sm:w-auto"
               onClick={handleEditClick}
             >
+
+              <img
+                src="/logo.png"
+                alt="App Logo"
+                style={{ height: "40px", width: "auto" }}
+              />
+
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
               <button
                 className="opacity-70 hover:opacity-100 transition-opacity duration-200 p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
@@ -137,6 +149,7 @@ export default function Home() {
               >
                 <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
+
             </motion.div>
           )}
 
@@ -146,8 +159,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tabs - Hidden on mobile */}
-      <div className="hidden sm:flex justify-center sm:justify-start gap-4 sm:gap-8 bg-gray-100 dark:bg-gray-800/60 p-3 rounded-xl shadow-lg backdrop-blur-md mb-8 ">
+
+
+      {/* Tabs - Row layout for desktop */}
+      <div className="hidden md:flex w-full max-w-6xl justify-start gap-4 px-2 mb-4">
         <TabButton
           icon={<MdOutlineDashboard />}
           label="Dashboard"
@@ -168,8 +183,9 @@ export default function Home() {
         />
       </div>
 
+
       {/* Dynamic Content */}
-      <div className="w-full max-w-6xl px-2 sm:px-4 m-2 bg-gray-50 dark:bg-gray-900 rounded-2xl">
+      <div className="w-full sm:px-4 rounded-2xl mb-6">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -190,13 +206,14 @@ function TabButton({ icon, label, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-2 rounded-md text-sm sm:text-base transition-all duration-300 w-full sm:w-auto ${isActive
-        ? "bg-indigo-600 text-white shadow-lg"
-        : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+      className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer
+        ${isActive
+          ? "bg-[#003399] text-white"
+          : "bg-white dark:bg-gray-800 text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 "
         }`}
     >
-      <span className="text-xl">{icon}</span>
-      <span>{label}</span>
+      <span className="text-lg">{icon}</span>
+      <span className="text-base font-semibold">{label}</span>
     </button>
   )
 }
