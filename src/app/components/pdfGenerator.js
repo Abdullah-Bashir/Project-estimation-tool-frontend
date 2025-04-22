@@ -1,3 +1,11 @@
+"use client";
+
+// ✅ Crypto fix first
+import "../components/fixPdfMakeCrypto";
+
+// ✅ Your helper import normally
+import { getBase64ImageFromUrl } from "../components/base64Image";
+
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
         alert("No tasks to export!");
@@ -9,9 +17,10 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
         return;
     }
 
-    // 🛠 Dynamic import here
+    // ✅ Dynamic import only pdfmake + fonts
     const pdfMakeModule = await import("pdfmake/build/pdfmake.min.js");
     const pdfFonts = await import("pdfmake/build/vfs_fonts.js");
+
     const pdfMake = pdfMakeModule.default;
     pdfMake.vfs = pdfFonts.default ? pdfFonts.default.vfs : pdfFonts.vfs;
 
@@ -51,6 +60,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     { text: projectName, style: 'projectNameHeader' },
                     { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
                     { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
+
                     { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
                     {
                         table: {
