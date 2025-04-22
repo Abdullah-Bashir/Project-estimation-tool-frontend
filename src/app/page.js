@@ -103,7 +103,7 @@ export default function Home() {
 
 
       {/* Header */}
-      <div className="w-full max-w-6xl flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 py-2">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 py-2 px-8 ">
         <div className="flex items-center justify-between w-full">
 
           {/* Mobile Navigation */}
