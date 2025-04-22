@@ -1,23 +1,11 @@
 "use client";
 
 import { getBase64ImageFromUrl } from "./base64Image";
-
-// Crypto polyfills for browser environment
 import { Buffer } from 'buffer';
-import { createHash } from 'crypto-browserify';
 
-if (typeof window !== 'undefined') {
+// Only polyfill Buffer if missing
+if (typeof window !== 'undefined' && !window.Buffer) {
     window.Buffer = Buffer;
-    window.crypto = {
-        getRandomValues: (arr) => crypto.getRandomValues(arr),
-        subtle: {
-            digest: (algorithm, data) => {
-                const hash = createHash(algorithm.toLowerCase().replace('-', ''));
-                hash.update(Buffer.from(data));
-                return Promise.resolve(hash.digest());
-            }
-        }
-    };
 }
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
@@ -32,28 +20,24 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        // Dynamically import pdfmake to reduce initial bundle size
-        const pdfMake = await import('pdfmake/build/pdfmake.min');
-        const pdfFonts = await import('pdfmake/build/vfs_fonts');
+        // Dynamically import pdfmake
+        const pdfMakeModule = await import('pdfmake/build/pdfmake.min.js');
+        const pdfFonts = await import('pdfmake/build/vfs_fonts.js');
 
-        // Initialize fonts
-        pdfMake.vfs = pdfFonts.pdfMake.vfs;
+        const pdfMake = pdfMakeModule.default;
+        pdfMake.vfs = pdfFonts.default.vfs;
 
-        // Get logo image as base64
         const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
-        // Get stored values
         const capability = localStorage.getItem("capability") || "N/A";
         const methodology = localStorage.getItem("methodology") || "N/A";
         const pillar = localStorage.getItem("pillar") || "N/A";
         const email = localStorage.getItem("email") || "N/A";
         const projectName = localStorage.getItem("projectName") || "Project Name";
 
-        // Calculate totals
         const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
         const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
 
-        // PDF document definition
         const docDefinition = {
             pageSize: 'A4',
             content: [
@@ -79,7 +63,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                         { text: projectName, style: 'projectNameHeader' },
                         { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
                         { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
-
                         { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
                         {
                             table: {
@@ -180,7 +163,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
             }
         };
 
-        // Create and download PDF
         pdfMake.createPdf(docDefinition).download('project-estimation-report.pdf');
     } catch (error) {
         console.error('PDF generation error:', error);
