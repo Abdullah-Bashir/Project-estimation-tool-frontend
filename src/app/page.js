@@ -162,7 +162,7 @@ export default function Home() {
 
 
       {/* Tabs - Row layout for desktop */}
-      <div className="hidden md:flex w-full max-w-6xl justify-start gap-4 px-2 mb-4">
+      <div className="hidden md:flex w-full justify-start gap-4 mb-4 px-10">
         <TabButton
           icon={<MdOutlineDashboard />}
           label="Dashboard"
