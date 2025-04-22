@@ -1,10 +1,7 @@
 "use client";
 
-// ✅ Crypto fix first
+import { getBase64ImageFromUrl } from "./base64Image";
 import "../components/fixPdfMakeCrypto";
-
-// ✅ Your helper import normally
-import { getBase64ImageFromUrl } from "../components/base64Image";
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
