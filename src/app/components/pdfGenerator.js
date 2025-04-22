@@ -1,12 +1,6 @@
 "use client";
 
 import { getBase64ImageFromUrl } from "./base64Image";
-import { Buffer } from 'buffer';
-
-// Only polyfill Buffer if missing
-if (typeof window !== 'undefined' && !window.Buffer) {
-    window.Buffer = Buffer;
-}
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
     if (!tasks || tasks.length === 0) {
@@ -20,12 +14,11 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        // Dynamically import pdfmake
-        const pdfMakeModule = await import('pdfmake/build/pdfmake.min.js');
-        const pdfFonts = await import('pdfmake/build/vfs_fonts.js');
+        // Import browser-safe pdfmake directly
+        const pdfMake = (await import('pdfmake/build/pdfmake')).default;
+        const pdfFonts = (await import('pdfmake/build/vfs_fonts')).default;
 
-        const pdfMake = pdfMakeModule.default;
-        pdfMake.vfs = pdfFonts.default.vfs;
+        pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
         const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
