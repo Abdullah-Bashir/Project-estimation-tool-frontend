@@ -1,12 +1,10 @@
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import { getBase64ImageFromUrl } from "../components/base64Image";
 
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 export const generatePdf = async (tasks, rockSize, useCase) => {
-    const pdfMakeModule = await import('pdfmake/build/pdfmake');
-    const pdfFonts = await import('pdfmake/build/vfs_fonts');
-
-    const pdfMake = pdfMakeModule.default;
-    pdfMake.vfs = pdfFonts.default.vfs;
-
     if (!tasks || tasks.length === 0) {
         alert("No tasks to export!");
         return;
@@ -44,26 +42,18 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     ]
                 },
                 layout: 'noBorders',
-                margin: [0, 0, 0, 20], // ✅ only bottom margin = 20px (spacing after black header)
+                margin: [0, 0, 0, 20],
             },
             {
-                margin: [40, 0, 40, 0], // ✅ normal margins for the main body
+                margin: [40, 0, 40, 0],
                 stack: [
                     { text: 'Collaborative Rock Sizing Estimator', style: 'sectionHeaderBlack' },
 
                     {
                         margin: [0, 10, 0, 2],
                         columns: [
-                            {
-                                width: 'auto',
-                                text: 'PREDICTED SIZE: ',
-                                style: 'predictedLabel',
-                            },
-                            {
-                                width: '*',
-                                text: rockSize,
-                                style: 'predictedValue',
-                            }
+                            { width: 'auto', text: 'PREDICTED SIZE: ', style: 'predictedLabel' },
+                            { width: '*', text: rockSize, style: 'predictedValue' },
                         ]
                     },
 
@@ -89,7 +79,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                                     { text: 'Resources', style: 'tableHeaderSlim' },
                                     { text: 'Comments', style: 'tableHeaderSlim' },
                                 ],
-                                ...tasks.map((task, i) => [
+                                ...tasks.map((task) => [
                                     task.title || '-',
                                     task.department || '-',
                                     task.hours || '-',
@@ -140,28 +130,28 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                 bold: true,
                 color: '#fff',
                 alignment: 'center',
-                margin: [0, 0, 0, 5]
+                margin: [0, 0, 0, 5],
             },
             sectionHeaderBlack: {
                 fontSize: 18,
                 bold: true,
-                color: '#000000', // black
+                color: '#000000',
                 marginBottom: 6,
             },
             predictedLabel: {
                 fontSize: 10,
                 bold: true,
-                color: '#003399', // blue
+                color: '#003399',
             },
             predictedValue: {
                 fontSize: 10,
-                color: '#000000', // black
+                color: '#000000',
             },
             tasksHeader: {
                 fontSize: 14,
                 bold: true,
                 marginBottom: 6,
-                color: '#444'
+                color: '#444',
             },
             tableHeaderSlim: {
                 bold: true,
@@ -175,7 +165,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
             },
             infoText: {
                 fontSize: 10,
-                margin: [0, 2]
+                margin: [0, 2],
             },
         },
         images: {
