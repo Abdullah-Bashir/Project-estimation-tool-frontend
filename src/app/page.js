@@ -102,7 +102,8 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
 
       {/* Header */}
-      <div className="w-full flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 py-2 px-8 ">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
+
         <div className="flex items-center justify-between w-full">
 
           {/* Mobile Navigation */}
@@ -113,7 +114,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex w-full sm:max-w-xl  gap-2"
+              className="flex w-full sm:max-w-xl gap-2"
             >
 
               <input
@@ -156,6 +157,7 @@ export default function Home() {
             <ThemeToggle />
           </div>
         </div>
+
       </div>
 
 
