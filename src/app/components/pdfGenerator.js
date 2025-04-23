@@ -1,5 +1,7 @@
 "use client";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { getBase64ImageFromUrl } from "./base64Image";
 
 export const generatePdf = async (tasks, rockSize, useCase) => {
@@ -14,153 +16,225 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        // ✅ Use non-minified versions — minified often breaks in modern Next
-        const pdfMakeModule = await import("pdfmake/build/pdfmake");
-        const pdfFonts = await import("pdfmake/build/vfs_fonts");
+        const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
+        const doc = new jsPDF();
 
-        // ✅ Correct assignment
-        const pdfMake = pdfMakeModule.default || pdfMakeModule;
-        pdfMake.vfs = pdfFonts.vfs;
+        // Header logo
+        doc.addImage(logo, "PNG", 80, 10, 50, 20);
+        doc.setFontSize(14);
+        doc.setTextColor("#000000");
+        doc.text("PM NETWORK ALLIANCE", 105, 35, { align: "center" });
 
-        const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
-
+        // Project info
+        doc.setFontSize(12);
+        doc.setTextColor("#003399");
+        const projectName = localStorage.getItem("projectName") || "Project Name";
         const capability = localStorage.getItem("capability") || "N/A";
         const methodology = localStorage.getItem("methodology") || "N/A";
         const pillar = localStorage.getItem("pillar") || "N/A";
         const email = localStorage.getItem("email") || "N/A";
-        const projectName = localStorage.getItem("projectName") || "Project Name";
 
-        const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
-        const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
+        doc.text(`Project Name: ${projectName}`, 15, 50);
+        doc.text(`Predicted Size: ${rockSize}`, 15, 58);
+        doc.text(`Use Case: ${useCase}`, 15, 66);
 
-        const docDefinition = {
-            pageSize: 'A4',
-            content: [
-                {
-                    table: {
-                        widths: ['*'],
-                        body: [
-                            [{
-                                stack: [
-                                    { image: 'logo', width: 60, alignment: 'center', margin: [0, 10, 0, 5] },
-                                    { text: 'PM NETWORK ALLIANCE', style: 'companyName' },
-                                ],
-                                fillColor: '#000000',
-                            }]
-                        ]
-                    },
-                    layout: 'noBorders',
-                    margin: [20, 0, 20, 20],
-                },
-                {
-                    margin: [40, 0, 40, 0],
-                    stack: [
-                        { text: projectName, style: 'projectNameHeader' },
-                        { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
-                        { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
-                        { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
-                        {
-                            table: {
-                                headerRows: 1,
-                                widths: ['*', '*', 'auto', 'auto', '*'],
-                                body: [
-                                    [
-                                        { text: 'Title', style: 'tableHeaderSlim' },
-                                        { text: 'Department', style: 'tableHeaderSlim' },
-                                        { text: 'Hours', style: 'tableHeaderSlim' },
-                                        { text: 'Resources', style: 'tableHeaderSlim' },
-                                        { text: 'Comments', style: 'tableHeaderSlim' },
-                                    ],
-                                    ...tasks.map((task) => [
-                                        task.title || '-',
-                                        task.department || '-',
-                                        task.hours || '-',
-                                        task.resources || '-',
-                                        task.comment || '-',
-                                    ]),
-                                ],
-                            },
-                            layout: {
-                                fillColor: (rowIndex) => rowIndex === 0 ? '#003399' : (rowIndex % 2 === 0 ? '#F2F6FF' : null),
-                                hLineColor: () => '#ccc',
-                                vLineColor: () => '#ccc',
-                                hLineWidth: () => 0.4,
-                                vLineWidth: () => 0.4,
-                                paddingTop: () => 4,
-                                paddingBottom: () => 4,
-                                paddingLeft: () => 6,
-                                paddingRight: () => 6,
-                            },
-                            margin: [0, 0, 0, 10],
-                        },
-                        {
-                            columns: [
-                                { text: '' },
-                                {
-                                    stack: [
-                                        { text: `Total Hours: ${totalHours}`, style: 'totalSlim', margin: [0, 5] },
-                                        { text: `Total Resources: ${totalResources}`, style: 'totalSlim' },
-                                    ],
-                                    alignment: 'right',
-                                }
-                            ]
-                        },
-                        { text: '', margin: [0, 20, 0, 0] },
-                        { text: `Capability: ${capability}`, style: 'infoText' },
-                        { text: `Methodology: ${methodology}`, style: 'infoText' },
-                        { text: `Pillar: ${pillar}`, style: 'infoText' },
-                        { text: `Email Address: ${email}`, style: 'infoText' },
-                    ]
-                }
-            ],
-            styles: {
-                companyName: {
-                    fontSize: 16,
-                    bold: true,
-                    color: '#fff',
-                    alignment: 'center',
-                    margin: [0, 0, 0, 5],
-                },
-                projectNameHeader: {
-                    fontSize: 18,
-                    bold: true,
-                    color: '#000000',
-                    marginBottom: 6,
-                },
-                tasksHeader: {
-                    fontSize: 14,
-                    bold: true,
-                    marginBottom: 6,
-                    color: '#444',
-                },
-                tableHeaderSlim: {
-                    bold: true,
-                    fontSize: 10,
-                    color: '#fff',
-                },
-                totalSlim: {
-                    fontSize: 11,
-                    bold: true,
-                    color: '#003399',
-                },
-                infoText: {
-                    fontSize: 10,
-                    margin: [0, 2],
-                },
-                infoSlim: {
-                    fontSize: 10,
-                    margin: [0, 0, 0, 2],
-                    color: '#003399',
-                },
-            },
-            images: {
-                logo: logoBase64,
-            }
-        };
+        doc.text(`Capability: ${capability}`, 15, 78);
+        doc.text(`Methodology: ${methodology}`, 15, 86);
+        doc.text(`Pillar: ${pillar}`, 15, 94);
+        doc.text(`Email: ${email}`, 15, 102);
 
-        pdfMake.createPdf(docDefinition).download('project-estimation-report.pdf');
+        // Tasks table
+        const taskRows = tasks.map(task => [
+            task.title || "-",
+            task.department || "-",
+            task.hours || "-",
+            task.resources || "-",
+            task.comment || "-"
+        ]);
+
+        autoTable(doc, {
+            startY: 110,
+            head: [["Title", "Department", "Hours", "Resources", "Comments"]],
+            body: taskRows,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [0, 51, 153] }
+        });
+
+        doc.save("project-estimation-report.pdf");
     } catch (error) {
-        console.error('PDF generation error:', error);
-        alert('Failed to generate PDF. Please try again.');
+        console.error("PDF generation error:", error);
+        alert("Failed to generate PDF. Please try again.");
     }
 };
+
+
+
+
+
+
+// "use client";
+
+// import { getBase64ImageFromUrl } from "./base64Image";
+
+// export const generatePdf = async (tasks, rockSize, useCase) => {
+//     if (!tasks || tasks.length === 0) {
+//         alert("No tasks to export!");
+//         return;
+//     }
+
+//     if (!rockSize || !useCase) {
+//         alert("Please calculate rock size first!");
+//         return;
+//     }
+
+//     try {
+//         // ✅ Use non-minified versions — minified often breaks in modern Next
+//         const pdfMakeModule = await import("pdfmake/build/pdfmake");
+//         const pdfFonts = await import("pdfmake/build/vfs_fonts");
+
+//         // ✅ Correct assignment
+//         const pdfMake = pdfMakeModule.default || pdfMakeModule;
+//         pdfMake.vfs = pdfFonts.vfs;
+
+//         const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
+
+//         const capability = localStorage.getItem("capability") || "N/A";
+//         const methodology = localStorage.getItem("methodology") || "N/A";
+//         const pillar = localStorage.getItem("pillar") || "N/A";
+//         const email = localStorage.getItem("email") || "N/A";
+//         const projectName = localStorage.getItem("projectName") || "Project Name";
+
+//         const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
+//         const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
+
+//         const docDefinition = {
+//             pageSize: 'A4',
+//             content: [
+//                 {
+//                     table: {
+//                         widths: ['*'],
+//                         body: [
+//                             [{
+//                                 stack: [
+//                                     { image: 'logo', width: 60, alignment: 'center', margin: [0, 10, 0, 5] },
+//                                     { text: 'PM NETWORK ALLIANCE', style: 'companyName' },
+//                                 ],
+//                                 fillColor: '#000000',
+//                             }]
+//                         ]
+//                     },
+//                     layout: 'noBorders',
+//                     margin: [20, 0, 20, 20],
+//                 },
+//                 {
+//                     margin: [40, 0, 40, 0],
+//                     stack: [
+//                         { text: projectName, style: 'projectNameHeader' },
+//                         { text: `PREDICTED SIZE: ${rockSize}`, style: 'infoSlim' },
+//                         { text: `USE CASE CATEGORY: ${useCase}`, style: 'infoSlim', margin: [0, 0, 0, 10] },
+//                         { text: 'TASKS:', style: 'tasksHeader', margin: [0, 10] },
+//                         {
+//                             table: {
+//                                 headerRows: 1,
+//                                 widths: ['*', '*', 'auto', 'auto', '*'],
+//                                 body: [
+//                                     [
+//                                         { text: 'Title', style: 'tableHeaderSlim' },
+//                                         { text: 'Department', style: 'tableHeaderSlim' },
+//                                         { text: 'Hours', style: 'tableHeaderSlim' },
+//                                         { text: 'Resources', style: 'tableHeaderSlim' },
+//                                         { text: 'Comments', style: 'tableHeaderSlim' },
+//                                     ],
+//                                     ...tasks.map((task) => [
+//                                         task.title || '-',
+//                                         task.department || '-',
+//                                         task.hours || '-',
+//                                         task.resources || '-',
+//                                         task.comment || '-',
+//                                     ]),
+//                                 ],
+//                             },
+//                             layout: {
+//                                 fillColor: (rowIndex) => rowIndex === 0 ? '#003399' : (rowIndex % 2 === 0 ? '#F2F6FF' : null),
+//                                 hLineColor: () => '#ccc',
+//                                 vLineColor: () => '#ccc',
+//                                 hLineWidth: () => 0.4,
+//                                 vLineWidth: () => 0.4,
+//                                 paddingTop: () => 4,
+//                                 paddingBottom: () => 4,
+//                                 paddingLeft: () => 6,
+//                                 paddingRight: () => 6,
+//                             },
+//                             margin: [0, 0, 0, 10],
+//                         },
+//                         {
+//                             columns: [
+//                                 { text: '' },
+//                                 {
+//                                     stack: [
+//                                         { text: `Total Hours: ${totalHours}`, style: 'totalSlim', margin: [0, 5] },
+//                                         { text: `Total Resources: ${totalResources}`, style: 'totalSlim' },
+//                                     ],
+//                                     alignment: 'right',
+//                                 }
+//                             ]
+//                         },
+//                         { text: '', margin: [0, 20, 0, 0] },
+//                         { text: `Capability: ${capability}`, style: 'infoText' },
+//                         { text: `Methodology: ${methodology}`, style: 'infoText' },
+//                         { text: `Pillar: ${pillar}`, style: 'infoText' },
+//                         { text: `Email Address: ${email}`, style: 'infoText' },
+//                     ]
+//                 }
+//             ],
+//             styles: {
+//                 companyName: {
+//                     fontSize: 16,
+//                     bold: true,
+//                     color: '#fff',
+//                     alignment: 'center',
+//                     margin: [0, 0, 0, 5],
+//                 },
+//                 projectNameHeader: {
+//                     fontSize: 18,
+//                     bold: true,
+//                     color: '#000000',
+//                     marginBottom: 6,
+//                 },
+//                 tasksHeader: {
+//                     fontSize: 14,
+//                     bold: true,
+//                     marginBottom: 6,
+//                     color: '#444',
+//                 },
+//                 tableHeaderSlim: {
+//                     bold: true,
+//                     fontSize: 10,
+//                     color: '#fff',
+//                 },
+//                 totalSlim: {
+//                     fontSize: 11,
+//                     bold: true,
+//                     color: '#003399',
+//                 },
+//                 infoText: {
+//                     fontSize: 10,
+//                     margin: [0, 2],
+//                 },
+//                 infoSlim: {
+//                     fontSize: 10,
+//                     margin: [0, 0, 0, 2],
+//                     color: '#003399',
+//                 },
+//             },
+//             images: {
+//                 logo: logoBase64,
+//             }
+//         };
+
+//         pdfMake.createPdf(docDefinition).download('project-estimation-report.pdf');
+//     } catch (error) {
+//         console.error('PDF generation error:', error);
+//         alert('Failed to generate PDF. Please try again.');
+//     }
+// };
