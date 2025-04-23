@@ -14,13 +14,12 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        const pdfMakeModule = await import('pdfmake/build/pdfmake.min.js');
-        const pdfFontsModule = await import('pdfmake/build/vfs_fonts.js');
+        // ✅ Use non-minified versions — minified often breaks in modern Next
+        const pdfMakeModule = await import("pdfmake/build/pdfmake");
+        const pdfFonts = await import("pdfmake/build/vfs_fonts");
 
+        // ✅ Correct assignment
         const pdfMake = pdfMakeModule.default || pdfMakeModule;
-        const pdfFonts = pdfFontsModule.default || pdfFontsModule;
-
-        // ✅ Fixed assignment here
         pdfMake.vfs = pdfFonts.vfs;
 
         const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
