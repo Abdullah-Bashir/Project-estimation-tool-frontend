@@ -16,35 +16,35 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
         const doc = new jsPDF();
+        const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
-        // Header logo
+        // Logo and Header
         doc.addImage(logo, "PNG", 80, 10, 50, 20);
         doc.setFontSize(14);
         doc.setTextColor("#000000");
         doc.text("PM NETWORK ALLIANCE", 105, 35, { align: "center" });
 
-        // Project info
-        doc.setFontSize(12);
-        doc.setTextColor("#003399");
-        const projectName = localStorage.getItem("projectName") || "Project Name";
+        // Metadata
         const capability = localStorage.getItem("capability") || "N/A";
         const methodology = localStorage.getItem("methodology") || "N/A";
         const pillar = localStorage.getItem("pillar") || "N/A";
         const email = localStorage.getItem("email") || "N/A";
+        const projectName = localStorage.getItem("projectName") || "Project Name";
 
-        doc.text(`Project Name: ${projectName}`, 15, 50);
-        doc.text(`Predicted Size: ${rockSize}`, 15, 58);
-        doc.text(`Use Case: ${useCase}`, 15, 66);
+        doc.setFontSize(11);
+        doc.setTextColor("#003399");
+        let y = 48;
+        doc.text(`Project Name: ${projectName}`, 15, y); y += 8;
+        doc.text(`Predicted Size: ${rockSize}`, 15, y); y += 8;
+        doc.text(`Use Case: ${useCase}`, 15, y); y += 12;
+        doc.text(`Capability: ${capability}`, 15, y); y += 8;
+        doc.text(`Methodology: ${methodology}`, 15, y); y += 8;
+        doc.text(`Pillar: ${pillar}`, 15, y); y += 8;
+        doc.text(`Email: ${email}`, 15, y); y += 12;
 
-        doc.text(`Capability: ${capability}`, 15, 78);
-        doc.text(`Methodology: ${methodology}`, 15, 86);
-        doc.text(`Pillar: ${pillar}`, 15, 94);
-        doc.text(`Email: ${email}`, 15, 102);
-
-        // Tasks table
-        const taskRows = tasks.map(task => [
+        // Table: Task Details
+        const tableData = tasks.map(task => [
             task.title || "-",
             task.department || "-",
             task.hours || "-",
@@ -53,21 +53,22 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
         ]);
 
         autoTable(doc, {
-            startY: 110,
+            startY: y,
             head: [["Title", "Department", "Hours", "Resources", "Comments"]],
-            body: taskRows,
+            body: tableData,
             styles: { fontSize: 9 },
-            headStyles: { fillColor: [0, 51, 153] }
+            headStyles: { fillColor: [0, 51, 153], textColor: 255 },
+            alternateRowStyles: { fillColor: [240, 245, 255] },
+            margin: { top: 10 }
         });
 
+        // Save PDF
         doc.save("project-estimation-report.pdf");
     } catch (error) {
         console.error("PDF generation error:", error);
         alert("Failed to generate PDF. Please try again.");
     }
 };
-
-
 
 
 
