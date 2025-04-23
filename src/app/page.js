@@ -12,6 +12,7 @@ import ThemeToggle from "./components/ThemeToggle"
 import MobileNavigation from "./components/MobileNavigation"
 
 export default function Home() {
+
   const [activeTab, setActiveTab] = useState(null)
   const [loading, setLoading] = useState(true)
   const [projectName, setProjectName] = useState("Project Name")
@@ -99,8 +100,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
-
-
 
       {/* Header */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 py-2 px-8 ">

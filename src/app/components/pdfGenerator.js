@@ -37,6 +37,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
 
         const docDefinition = {
             pageSize: 'A4',
+
             content: [
                 {
                     table: {
@@ -115,6 +116,7 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     ]
                 }
             ],
+
             styles: {
                 companyName: {
                     fontSize: 16,
