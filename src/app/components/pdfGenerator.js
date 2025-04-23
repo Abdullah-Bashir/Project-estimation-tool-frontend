@@ -14,15 +14,14 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
     }
 
     try {
-        // Import modules
         const pdfMakeModule = await import('pdfmake/build/pdfmake.min.js');
         const pdfFontsModule = await import('pdfmake/build/vfs_fonts.js');
 
-        // Correct module handling
         const pdfMake = pdfMakeModule.default || pdfMakeModule;
         const pdfFonts = pdfFontsModule.default || pdfFontsModule;
 
-        pdfMake.vfs = pdfFonts.pdfMake.vfs;
+        // ✅ Fixed assignment here
+        pdfMake.vfs = pdfFonts.vfs;
 
         const logoBase64 = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
@@ -37,7 +36,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
 
         const docDefinition = {
             pageSize: 'A4',
-
             content: [
                 {
                     table: {
@@ -116,7 +114,6 @@ export const generatePdf = async (tasks, rockSize, useCase) => {
                     ]
                 }
             ],
-
             styles: {
                 companyName: {
                     fontSize: 16,
