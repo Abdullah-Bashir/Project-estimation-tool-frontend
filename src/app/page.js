@@ -139,7 +139,9 @@ export default function Home() {
   };
 
   const handleEditClick = () => setIsEditing(true);
+
   const handleBlur = () => setIsEditing(false);
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleBlur();
   };
@@ -197,9 +199,11 @@ export default function Home() {
       {/* Header */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
         <div className="flex items-center justify-between w-full">
+
           <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
           <div className="flex items-center gap-3 relative">
+
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
               <img src="/logo.png" alt="Logo" className="h-10 w-10" />
               <FiChevronDown className="text-xl" />
@@ -240,9 +244,11 @@ export default function Home() {
                     key={project._id}
                     className="flex justify-between items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
                   >
+
                     <span
                       onClick={() => {
                         setProjectName(project.title);
+                        setSummary(project.reports?.summary || ""); // 🔥 ADD THIS LINE
                         localStorage.setItem("currentProject", JSON.stringify(project));
                         window.dispatchEvent(
                           new CustomEvent("customStorageChange", {
@@ -255,6 +261,8 @@ export default function Home() {
                     >
                       {project.title}
                     </span>
+
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -273,22 +281,12 @@ export default function Home() {
           <div className="ml-0 sm:ml-4">
             <ThemeToggle />
           </div>
+
         </div>
       </div>
 
       {/* Summary + Tabs */}
       <div className="flex justify-between items-center w-full px-6 mb-4">
-        {/* Summary input left */}
-        <div className="flex flex-col justify-center mr-6 w-[300px]">
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
-          <input
-            type="text"
-            value={summary}
-            onChange={handleSummaryChange}
-            placeholder="Write project summary..."
-            className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-          />
-        </div>
 
         {/* Tabs */}
         <div className="hidden md:flex justify-start gap-4">
@@ -297,7 +295,22 @@ export default function Home() {
           <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
           <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
         </div>
+
+        {/* Summary input left */}
+        <div className="flex flex-col justify-center mr-6 w-[300px]">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
+          <textarea
+            value={summary}
+            onChange={handleSummaryChange}
+            placeholder="Write project summary..."
+            rows={4} // 🔥 4 rows height initially
+            className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
+          />
+        </div>
+
+
       </div>
+
 
       {/* Dynamic Content */}
       <div className="w-full sm:px-4 rounded-2xl mb-6">
@@ -316,6 +329,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 function TabButton({ icon, label, isActive, onClick }) {
   return (

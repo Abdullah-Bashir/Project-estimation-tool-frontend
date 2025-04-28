@@ -119,14 +119,11 @@ export default function Reports() {
         updateLocalStorage("email", e.target.value);
         setIsRockSizeCalculated(false);
     };
-
     const updateLocalStorage = (key, value) => {
         const updatedProject = { ...currentProject, reports: { ...currentProject.reports, [key]: value } };
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
     };
-
     const handleSave = async () => {
-
         if (!isRockSizeCalculated) {
             toast.error("Please calculate Rock Size before saving");
             return;
@@ -150,6 +147,7 @@ export default function Reports() {
                 email,
                 rockSize,
                 useCase,
+                summary: currentProject?.reports?.summary || "-", // ✅ now summary included
                 totalHours: tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0),
                 totalResources: tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0),
                 tasks: formattedTasks,
@@ -170,15 +168,14 @@ export default function Reports() {
 
             localStorage.setItem("currentProject", JSON.stringify(updatedProject));
             toast.success("Project saved successfully!");
-
-            // ✅ refetch projects
             await refetch();
-            setIsRockSizeCalculated(false); // reset after save
+            setIsRockSizeCalculated(false);
         } catch (error) {
             console.error("Error saving project:", error);
             toast.error("Failed to save project.");
         }
     };
+
 
 
     if (!currentProject) {
@@ -286,6 +283,9 @@ export default function Reports() {
         </div>
     );
 }
+
+
+
 
 function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }) {
     if (!useCase) return null;

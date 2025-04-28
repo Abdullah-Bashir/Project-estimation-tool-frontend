@@ -10,6 +10,7 @@ const departmentOptions = [
 ]
 
 export default function EditTaskModal({ task, onClose, onSave }) {
+
     const [updatedTask, setUpdatedTask] = useState(task)
     const [isOpen, setIsOpen] = useState(false)
 
@@ -163,6 +164,8 @@ export default function EditTaskModal({ task, onClose, onSave }) {
     )
 }
 
+
+
 // 🔥 Reusable Input Field
 const InputField = ({ label, ...props }) => (
     <div className="flex flex-col gap-1.5">
@@ -173,6 +176,8 @@ const InputField = ({ label, ...props }) => (
         />
     </div>
 )
+
+
 
 // 🔥 Enhanced Select Field with Custom Dropdown
 const EnhancedSelectField = ({ label, options, value, onChange }) => {
