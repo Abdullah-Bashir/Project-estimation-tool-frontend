@@ -6,24 +6,7 @@ import ModalRoot from "./modalRoot"
 import { X, ChevronDown } from "lucide-react"
 
 const departmentOptions = [
-    "Claims",
-    "Finance / Underwriting",
-    "Healthcare Delivery",
-    "Hospitality Rx",
-    "HRT",
-    "Human Resources",
-    "Informatics",
-    "Information Technology",
-    "Legal",
-    "LV: Advocacy/Comms",
-    "LV: Hospitality",
-    "LV: Network",
-    "LV: NHS",
-    "Medical Management",
-    "New Membership / HIPAA",
-    "Office Services",
-    "Operations",
-    "PMO",
+    "Claims", "Finance / Underwriting", "Healthcare Delivery", "Hospitality Rx", "HRT", "Human Resources", "Informatics", "Information Technology", "Legal", "LV: Advocacy/Comms", "LV: Hospitality", "LV: Network", "LV: NHS", "Medical Management", "New Membership / HIPAA", "Office Services", "Operations", "PMO",
 ]
 
 export default function EditTaskModal({ task, onClose, onSave }) {
@@ -113,31 +96,40 @@ export default function EditTaskModal({ task, onClose, onSave }) {
                                 />
 
                                 <InputField
-                                    label="Comment"
+                                    label="Assumptions"
                                     value={updatedTask.comment}
                                     onChange={(e) => setUpdatedTask({ ...updatedTask, comment: e.target.value })}
                                 />
 
                                 <div className="grid grid-cols-3 gap-4">
                                     <InputField
-                                        label="Hours"
+                                        label="Duration (Months)"
                                         type="number"
-                                        value={updatedTask.hours}
-                                        onChange={(e) => setUpdatedTask({ ...updatedTask, hours: +e.target.value })}
+                                        value={updatedTask.hours === null ? "" : updatedTask.hours}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === "") {
+                                                setUpdatedTask({ ...updatedTask, hours: null });
+                                            } else if (!isNaN(value) && Number(value) >= 0) {
+                                                setUpdatedTask({ ...updatedTask, hours: Number(value) });
+                                            }
+                                        }}
                                     />
                                     <InputField
                                         label="Resources"
                                         type="number"
-                                        value={updatedTask.resources}
-                                        onChange={(e) => setUpdatedTask({ ...updatedTask, resources: +e.target.value })}
-                                    />
-                                    <InputField
-                                        label="Duration"
-                                        type="number"
-                                        value={updatedTask.duration}
-                                        onChange={(e) => setUpdatedTask({ ...updatedTask, duration: +e.target.value })}
+                                        value={updatedTask.resources === null ? "" : updatedTask.resources}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === "") {
+                                                setUpdatedTask({ ...updatedTask, resources: null });
+                                            } else if (!isNaN(value) && Number(value) >= 0) {
+                                                setUpdatedTask({ ...updatedTask, resources: Number(value) });
+                                            }
+                                        }}
                                     />
                                 </div>
+
                             </motion.div>
 
                             <motion.div

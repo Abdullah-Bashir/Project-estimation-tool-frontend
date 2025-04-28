@@ -1,37 +1,73 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import LordIconScript from "../components/lordiconScript";
 import EditTaskModal from "../popups/editTaskModal";
 
-export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
+export default function Tasks() {
+
+    const initialProject = JSON.parse(localStorage.getItem("currentProject"));
+
+    const [currentProject, setCurrentProject] = useState(initialProject);
+    const [tasks, setTasks] = useState(initialProject?.reports?.tasks || []);
+    const [newTask, setNewTask] = useState({
+        title: "",
+        hours: null,
+        resources: null,
+        duration: null,
+        comment: "",
+        department: "",
+    });
+
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [taskBeingEdited, setTaskBeingEdited] = useState(null);
+
     const departmentOptions = [
-        "Claims",
-        "Finance / Underwriting",
-        "Healthcare Delivery",
-        "Hospitality Rx",
-        "HRT",
-        "Human Resources",
-        "Informatics",
-        "Information Technology",
-        "Legal",
-        "LV: Advocacy/Comms",
-        "LV: Hospitality",
-        "LV: Network",
-        "LV: NHS",
-        "Medical Management",
-        "New Membership / HIPAA",
-        "Office Services",
-        "Operations",
-        "PMO",
+        "Claims", "Finance / Underwriting", "Healthcare Delivery", "Hospitality Rx", "HRT", "Human Resources",
+        "Informatics", "Information Technology", "Legal", "LV: Advocacy/Comms", "LV: Hospitality", "LV: Network",
+        "LV: NHS", "Medical Management", "New Membership / HIPAA", "Office Services", "Operations", "PMO"
     ];
 
-    const [isEditOpen, setIsEditOpen] = React.useState(false);
-    const [taskBeingEdited, setTaskBeingEdited] = React.useState(null);
+    useEffect(() => {
+        const handleCustomStorageChange = (event) => {
+            if (event.detail.key === "currentProject") {
+                const newProject = JSON.parse(event.detail.newValue);
+                setCurrentProject(newProject);
+                setTasks(newProject?.reports?.tasks || []);
+            }
+        };
+
+        window.addEventListener("customStorageChange", handleCustomStorageChange);
+
+        return () => {
+            window.removeEventListener("customStorageChange", handleCustomStorageChange);
+        };
+    }, []);
+
+
+    const updateLocalStorage = (updatedProject) => {
+        localStorage.setItem("currentProject", JSON.stringify(updatedProject));
+        window.dispatchEvent(
+            new CustomEvent("customStorageChange", {
+                detail: { key: "currentProject", newValue: JSON.stringify(updatedProject) },
+            })
+        );
+    };
 
     const addTask = () => {
         if (newTask.title && newTask.department && newTask.comment) {
             const updatedTasks = [...tasks, newTask];
+            const updatedProject = {
+                ...currentProject,
+                reports: {
+                    ...currentProject.reports,
+                    tasks: updatedTasks,
+                    totalHours: (currentProject?.reports?.totalHours || 0) + (newTask.hours || 0),
+                    totalResources: (currentProject?.reports?.totalResources || 0) + (newTask.resources || 0),
+                },
+            };
+            updateLocalStorage(updatedProject);
+            setCurrentProject(updatedProject);
             setTasks(updatedTasks);
             setNewTask({ title: "", hours: null, resources: null, duration: null, comment: "", department: "" });
         }
@@ -42,6 +78,17 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
         if (confirmDelete) {
             const updatedTasks = [...tasks];
             updatedTasks.splice(index, 1);
+            const updatedProject = {
+                ...currentProject,
+                reports: {
+                    ...currentProject.reports,
+                    tasks: updatedTasks,
+                    totalHours: updatedTasks.reduce((acc, task) => acc + (task.hours || 0), 0),
+                    totalResources: updatedTasks.reduce((acc, task) => acc + (task.resources || 0), 0),
+                },
+            };
+            updateLocalStorage(updatedProject);
+            setCurrentProject(updatedProject);
             setTasks(updatedTasks);
         }
     };
@@ -61,14 +108,33 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
             resources: updatedTask.resources,
             duration: updatedTask.duration,
         };
+        const updatedProject = {
+            ...currentProject,
+            reports: {
+                ...currentProject.reports,
+                tasks: updatedTasks,
+                totalHours: updatedTasks.reduce((acc, task) => acc + (task.hours || 0), 0),
+                totalResources: updatedTasks.reduce((acc, task) => acc + (task.resources || 0), 0),
+            },
+        };
+        updateLocalStorage(updatedProject);
+        setCurrentProject(updatedProject);
         setTasks(updatedTasks);
+        setIsEditOpen(false);
     };
 
-    // New: Helper to ensure positive numbers only
     const handlePositiveNumberChange = (e, field) => {
         const value = Math.max(0, Number(e.target.value));
         setNewTask({ ...newTask, [field]: value });
     };
+
+    if (!currentProject) {
+        return (
+            <div className="h-screen flex justify-center items-center text-gray-500 dark:text-gray-300 text-lg">
+                No project data found. Please select a project.
+            </div>
+        );
+    }
 
     return (
         <div className={`min-h-screen w-full p-6 ${isEditOpen ? "backdrop-blur-sm" : ""} transition-all duration-300`}>
@@ -93,16 +159,10 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
                             options={departmentOptions}
                         />
                         <InputField
-                            label="Comment"
+                            label="Assumptions"
                             value={newTask.comment}
                             onChange={(e) => setNewTask({ ...newTask, comment: e.target.value })}
                             placeholder="Enter your comment"
-                        />
-                        <InputField
-                            label="Hours"
-                            type="number"
-                            value={newTask.hours}
-                            onChange={(e) => handlePositiveNumberChange(e, "hours")}
                         />
                         <InputField
                             label="Resources"
@@ -111,10 +171,10 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
                             onChange={(e) => handlePositiveNumberChange(e, "resources")}
                         />
                         <InputField
-                            label="Duration (days)"
+                            label="Duration (Months)"
                             type="number"
-                            value={newTask.duration}
-                            onChange={(e) => handlePositiveNumberChange(e, "duration")}
+                            value={newTask.hours}
+                            onChange={(e) => handlePositiveNumberChange(e, "hours")}
                         />
                     </div>
 
@@ -134,7 +194,7 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
                 </div>
             </div>
 
-            {/* Responsive Tasks Table */}
+            {/* Tasks Table */}
             <div className="w-full mx-auto">
                 <div className="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
                     <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
@@ -143,9 +203,9 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
                                 <tr className="text-left dark:text-gray-300 text-xs sm:text-sm uppercase font-semibold">
                                     <th className="px-4 sm:px-6 py-3 md:py-4 rounded-tl-xl">Project Name</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4">Department</th>
-                                    <th className="px-4 sm:px-6 py-3 md:py-4">Hours</th>
+                                    <th className="px-4 sm:px-6 py-3 md:py-4">Duration</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4">Resources</th>
-                                    <th className="px-4 sm:px-6 py-3 md:py-4">Comment</th>
+                                    <th className="px-4 sm:px-6 py-3 md:py-4">Assumptions</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4 rounded-tr-xl text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -216,17 +276,21 @@ export default function Tasks({ tasks, setTasks, newTask, setNewTask }) {
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
             </div>
 
-            {/* Edit Modal */}
             {isEditOpen && (
                 <EditTaskModal task={taskBeingEdited} onClose={() => setIsEditOpen(false)} onSave={saveEditedTask} />
             )}
         </div>
     );
 }
+
+
+
+
 
 // Enhanced InputField
 function InputField({ label, type = "text", ...props }) {
@@ -239,32 +303,30 @@ function InputField({ label, type = "text", ...props }) {
                 type={type}
                 {...props}
                 value={props.value ?? ""}
-                min={type === "number" ? 0 : undefined} // <== New: prevent typing negatives
+                min={type === "number" ? null : undefined}
                 className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-gray-600 rounded-xl outline-none bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-4 focus:ring-indigo-100/50 focus:border-indigo-500 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm hover:shadow-md"
             />
         </div>
     );
 }
 
-
-
 // Enhanced SelectField Component
 function SelectField({ label, value, onChange, options }) {
-    const [isOpen, setIsOpen] = React.useState(false)
-    const dropdownRef = React.useRef(null)
+    const [isOpen, setIsOpen] = React.useState(false);
+    const dropdownRef = React.useRef(null);
 
     // Close dropdown when clicking outside
     React.useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false)
+                setIsOpen(false);
             }
         }
-        document.addEventListener("mousedown", handleClickOutside)
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside)
-        }
-    }, [])
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="space-y-1 md:space-y-2">
@@ -299,8 +361,8 @@ function SelectField({ label, value, onChange, options }) {
                                     key={option}
                                     className="px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
                                     onClick={() => {
-                                        onChange({ target: { value: option } })
-                                        setIsOpen(false)
+                                        onChange({ target: { value: option } });
+                                        setIsOpen(false);
                                     }}
                                 >
                                     {option}
@@ -321,5 +383,5 @@ function SelectField({ label, value, onChange, options }) {
                 </select>
             </div>
         </div>
-    )
+    );
 }

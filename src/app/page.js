@@ -1,24 +1,45 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { MdOutlineDashboard } from "react-icons/md"
-import { FaTasks } from "react-icons/fa"
-import { HiOutlineDocumentReport, HiOutlinePencil } from "react-icons/hi"
-import Dashboard from "@/app/components/Dashboard"
-import Tasks from "@/app/components/Tasks"
-import Reports from "@/app/components/Reports"
-import ThemeToggle from "./components/ThemeToggle"
-import MobileNavigation from "./components/MobileNavigation"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MdOutlineDashboard } from "react-icons/md";
+import { FaTasks, FaPlus } from "react-icons/fa";
+import { HiOutlineDocumentReport, HiOutlinePencil } from "react-icons/hi";
+import Dashboard from "@/app/components/Dashboard";
+import Tasks from "@/app/components/Tasks";
+import Reports from "@/app/components/Reports";
+import ThemeToggle from "./components/ThemeToggle";
+import MobileNavigation from "./components/MobileNavigation";
+import { useGetAllProjectsQuery } from "@/app/redux/api/projectDetailApi";
+import { FiChevronDown } from "react-icons/fi";
+import { useDeleteProjectMutation } from "@/app/redux/api/projectDetailApi";
+import { toast } from "react-toastify";
+
+const createEmptyProject = () => ({
+  title: "New Project",
+  reports: {
+    email: "",
+    capability: "Maintain (Keep lights on)",
+    methodology: "Agile",
+    pillar: "Organizational & Staff",
+    rockSize: "",
+    useCase: "",
+    totalHours: 0,
+    totalResources: 0,
+    summary: "", // 🔥 Important
+    tasks: [],
+  },
+});
 
 export default function Home() {
-
-  const [activeTab, setActiveTab] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [projectName, setProjectName] = useState("Project Name")
-  const [isEditing, setIsEditing] = useState(false)
-
-  const [tasks, setTasks] = useState([])
+  const [activeTab, setActiveTab] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [projectName, setProjectName] = useState("Project Name");
+  const [summary, setSummary] = useState(""); // Summary state
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { data: projects = [] } = useGetAllProjectsQuery();
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     title: "",
     hours: 0,
@@ -26,50 +47,122 @@ export default function Home() {
     duration: 1,
     comment: "",
     department: "",
-  })
+  });
+  const [deleteProject] = useDeleteProjectMutation();
+
+  const handleDeleteProject = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this project?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteProject(id).unwrap();
+      toast.success("Project deleted successfully!");
+
+      const currentProject = JSON.parse(localStorage.getItem("currentProject"));
+      if (currentProject && currentProject._id === id) {
+        const newProject = createEmptyProject();
+        localStorage.setItem("currentProject", JSON.stringify(newProject));
+        localStorage.setItem("tasks", JSON.stringify([]));
+        localStorage.setItem("newTask", JSON.stringify({
+          title: "",
+          hours: 0,
+          resources: 1,
+          duration: 1,
+          comment: "",
+          department: "",
+        }));
+      }
+
+      setShowDropdown(false);
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      toast.error("Failed to delete project.");
+    }
+  };
 
   useEffect(() => {
-    const storedTab = localStorage.getItem("activeTab")
-    const storedProjectName = localStorage.getItem("projectName")
-    const storedTasks = localStorage.getItem("tasks")
-    const storedNewTask = localStorage.getItem("newTask")
+    const storedTab = localStorage.getItem("activeTab");
+    const storedProject = localStorage.getItem("currentProject");
+    const storedTasks = localStorage.getItem("tasks");
+    const storedNewTask = localStorage.getItem("newTask");
 
-    if (storedTab) setActiveTab(storedTab)
-    else setActiveTab("dashboard")
+    if (storedTab) setActiveTab(storedTab);
+    else setActiveTab("dashboard");
 
-    if (storedProjectName) setProjectName(storedProjectName)
-    if (storedTasks) setTasks(JSON.parse(storedTasks))
-    if (storedNewTask) setNewTask(JSON.parse(storedNewTask))
+    if (storedProject) {
+      const project = JSON.parse(storedProject);
+      setProjectName(project.title || "Project Name");
+      setSummary(project.reports.summary || "");
+      setTasks(project.reports.tasks || []);
+    }
 
-    setLoading(false)
-  }, [])
+    if (storedTasks) setTasks(JSON.parse(storedTasks));
+    if (storedNewTask) setNewTask(JSON.parse(storedNewTask));
+
+    setLoading(false);
+  }, []);
+
 
   useEffect(() => {
-    if (activeTab) localStorage.setItem("activeTab", activeTab)
-    if (projectName.trim() !== "") localStorage.setItem("projectName", projectName)
-    localStorage.setItem("tasks", JSON.stringify(tasks))
-    localStorage.setItem("newTask", JSON.stringify(newTask))
-  }, [activeTab, projectName, tasks, newTask])
+    if (activeTab) localStorage.setItem("activeTab", activeTab);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+    localStorage.setItem("newTask", JSON.stringify(newTask));
+  }, [activeTab, tasks, newTask]);
 
-  const handleProjectNameChange = (e) => setProjectName(e.target.value)
-  const handleEditClick = () => setIsEditing(true)
-  const handleBlur = () => setIsEditing(false)
+
+  const handleProjectNameChange = (e) => {
+    setProjectName(e.target.value);
+    const updatedProject = JSON.parse(localStorage.getItem("currentProject"));
+    updatedProject.title = e.target.value;
+    localStorage.setItem("currentProject", JSON.stringify(updatedProject));
+  };
+
+  const handleSummaryChange = (e) => {
+    const newSummary = e.target.value;
+    setSummary(newSummary);
+
+    const storedProject = localStorage.getItem("currentProject");
+    if (!storedProject) return;
+
+    const project = JSON.parse(storedProject);
+    if (!project.reports) project.reports = {};
+    project.reports.summary = newSummary;
+
+    localStorage.setItem("currentProject", JSON.stringify(project));
+
+    window.dispatchEvent(
+      new CustomEvent("customStorageChange", {
+        detail: { key: "currentProject", newValue: JSON.stringify(project) },
+      })
+    );
+  };
+
+  const handleEditClick = () => setIsEditing(true);
+  const handleBlur = () => setIsEditing(false);
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleBlur()
-  }
+    if (e.key === "Enter") handleBlur();
+  };
+
+  const handleCreateProject = () => {
+    const newProject = createEmptyProject();
+    localStorage.setItem("currentProject", JSON.stringify(newProject));
+    setProjectName(newProject.title);
+    window.location.reload();
+  };
 
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard />
+        return <Dashboard />;
       case "tasks":
-        return <Tasks tasks={tasks} setTasks={setTasks} newTask={newTask} setNewTask={setNewTask} />
+        return <Tasks tasks={tasks} setTasks={setTasks} newTask={newTask} setNewTask={setNewTask} />;
       case "reports":
-        return <Reports />
+        return <Reports />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -95,7 +188,7 @@ export default function Home() {
           </motion.p>
         </motion.div>
       </div>
-    )
+    );
   }
 
   return (
@@ -103,20 +196,16 @@ export default function Home() {
 
       {/* Header */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
-
         <div className="flex items-center justify-between w-full">
-
-          {/* Mobile Navigation */}
           <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          {/* Project Name */}
-          {isEditing ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex w-full sm:max-w-xl gap-2"
-            >
+          <div className="flex items-center gap-3 relative">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
+              <img src="/logo.png" alt="Logo" className="h-10 w-10" />
+              <FiChevronDown className="text-xl" />
+            </div>
 
+            {isEditing ? (
               <input
                 type="text"
                 value={projectName}
@@ -124,66 +213,91 @@ export default function Home() {
                 onBlur={handleBlur}
                 onKeyPress={handleKeyPress}
                 autoFocus
-                className="w-full text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
+                className="text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
                 placeholder="Enter Project Name"
               />
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center justify-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors w-full sm:w-auto"
-              onClick={handleEditClick}
-            >
-
-              <img
-                src="/logo.png"
-                alt="App Logo"
-                style={{ height: "40px", width: "auto" }}
-              />
-
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
-              <button
-                className="opacity-70 hover:opacity-100 transition-opacity duration-200 p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors"
                 onClick={handleEditClick}
               >
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
                 <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </button>
+              </motion.div>
+            )}
 
-            </motion.div>
-          )}
+            {showDropdown && (
+              <motion.ul
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-14 left-0 w-52 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden z-50"
+              >
+                {projects.map((project) => (
+                  <li
+                    key={project._id}
+                    className="flex justify-between items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
+                  >
+                    <span
+                      onClick={() => {
+                        setProjectName(project.title);
+                        localStorage.setItem("currentProject", JSON.stringify(project));
+                        window.dispatchEvent(
+                          new CustomEvent("customStorageChange", {
+                            detail: { key: "currentProject", newValue: JSON.stringify(project) },
+                          })
+                        );
+                        setShowDropdown(false);
+                      }}
+                      className="flex-1"
+                    >
+                      {project.title}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProject(project._id);
+                      }}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </div>
 
           <div className="ml-0 sm:ml-4">
             <ThemeToggle />
           </div>
         </div>
-
       </div>
 
+      {/* Summary + Tabs */}
+      <div className="flex justify-between items-center w-full px-6 mb-4">
+        {/* Summary input left */}
+        <div className="flex flex-col justify-center mr-6 w-[300px]">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
+          <input
+            type="text"
+            value={summary}
+            onChange={handleSummaryChange}
+            placeholder="Write project summary..."
+            className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+          />
+        </div>
 
-
-      {/* Tabs - Row layout for desktop */}
-      <div className="hidden md:flex w-full justify-start gap-4 mb-4 px-10">
-        <TabButton
-          icon={<MdOutlineDashboard />}
-          label="Dashboard"
-          isActive={activeTab === "dashboard"}
-          onClick={() => setActiveTab("dashboard")}
-        />
-        <TabButton
-          icon={<FaTasks />}
-          label="Tasks"
-          isActive={activeTab === "tasks"}
-          onClick={() => setActiveTab("tasks")}
-        />
-        <TabButton
-          icon={<HiOutlineDocumentReport />}
-          label="Reports"
-          isActive={activeTab === "reports"}
-          onClick={() => setActiveTab("reports")}
-        />
+        {/* Tabs */}
+        <div className="hidden md:flex justify-start gap-4">
+          <TabButton icon={<MdOutlineDashboard />} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
+          <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
+          <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
+          <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
+        </div>
       </div>
-
 
       {/* Dynamic Content */}
       <div className="w-full sm:px-4 rounded-2xl mb-6">
@@ -200,21 +314,18 @@ export default function Home() {
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }
 
 function TabButton({ icon, label, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer
-        ${isActive
-          ? "bg-[#003399] text-white"
-          : "bg-white dark:bg-gray-800 text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 "
+      className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer ${isActive ? "bg-[#003399] text-white" : "bg-white dark:bg-gray-800 text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
         }`}
     >
       <span className="text-lg">{icon}</span>
       <span className="text-base font-semibold">{label}</span>
     </button>
-  )
+  );
 }
