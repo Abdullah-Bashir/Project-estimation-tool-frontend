@@ -10,9 +10,8 @@ import Tasks from "@/app/components/Tasks";
 import Reports from "@/app/components/Reports";
 import ThemeToggle from "./components/ThemeToggle";
 import MobileNavigation from "./components/MobileNavigation";
-import { useGetAllProjectsQuery } from "@/app/redux/api/projectDetailApi";
+import { useGetAllProjectsQuery, useDeleteProjectMutation } from "@/app/redux/api/projectDetailApi";
 import { FiChevronDown } from "react-icons/fi";
-import { useDeleteProjectMutation } from "@/app/redux/api/projectDetailApi";
 import { toast } from "react-toastify";
 
 const createEmptyProject = () => ({
@@ -26,7 +25,7 @@ const createEmptyProject = () => ({
     useCase: "",
     totalHours: 0,
     totalResources: 0,
-    summary: "", // 🔥 Important
+    summary: "",
     tasks: [],
   },
 });
@@ -35,7 +34,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
   const [projectName, setProjectName] = useState("Project Name");
-  const [summary, setSummary] = useState(""); // Summary state
+  const [summary, setSummary] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const { data: projects = [] } = useGetAllProjectsQuery();
@@ -103,13 +102,11 @@ export default function Home() {
     setLoading(false);
   }, []);
 
-
   useEffect(() => {
     if (activeTab) localStorage.setItem("activeTab", activeTab);
     localStorage.setItem("tasks", JSON.stringify(tasks));
     localStorage.setItem("newTask", JSON.stringify(newTask));
   }, [activeTab, tasks, newTask]);
-
 
   const handleProjectNameChange = (e) => {
     setProjectName(e.target.value);
@@ -139,9 +136,7 @@ export default function Home() {
   };
 
   const handleEditClick = () => setIsEditing(true);
-
   const handleBlur = () => setIsEditing(false);
-
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleBlur();
   };
@@ -209,6 +204,8 @@ export default function Home() {
               <FiChevronDown className="text-xl" />
             </div>
 
+
+
             {isEditing ? (
               <input
                 type="text"
@@ -217,7 +214,7 @@ export default function Home() {
                 onBlur={handleBlur}
                 onKeyPress={handleKeyPress}
                 autoFocus
-                className="text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
+                className="w-full max-w-[250px] sm:max-w-none text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
                 placeholder="Enter Project Name"
               />
             ) : (
@@ -232,6 +229,9 @@ export default function Home() {
               </motion.div>
             )}
 
+
+
+
             {showDropdown && (
               <motion.ul
                 initial={{ opacity: 0, y: -10 }}
@@ -244,25 +244,20 @@ export default function Home() {
                     key={project._id}
                     className="flex justify-between items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
                   >
-
                     <span
                       onClick={() => {
                         setProjectName(project.title);
-                        setSummary(project.reports?.summary || ""); // 🔥 ADD THIS LINE
+                        setSummary(project.reports?.summary || "");
                         localStorage.setItem("currentProject", JSON.stringify(project));
-                        window.dispatchEvent(
-                          new CustomEvent("customStorageChange", {
-                            detail: { key: "currentProject", newValue: JSON.stringify(project) },
-                          })
-                        );
+                        window.dispatchEvent(new CustomEvent("customStorageChange", {
+                          detail: { key: "currentProject", newValue: JSON.stringify(project) },
+                        }));
                         setShowDropdown(false);
                       }}
                       className="flex-1"
                     >
                       {project.title}
                     </span>
-
-
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -285,31 +280,33 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Summary + Tabs */}
-      <div className="flex justify-between items-center w-full px-6 mb-4">
 
-        {/* Tabs */}
-        <div className="hidden md:flex justify-start gap-4">
+      {/* Summary + Tabs */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full px-4 md:px-6 mb-4 gap-4">
+
+        {/* Tabs only on md+ */}
+        <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
           <TabButton icon={<MdOutlineDashboard />} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
           <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
           <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
           <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
         </div>
 
-        {/* Summary input left */}
-        <div className="flex flex-col justify-center mr-6 w-[300px]">
+        {/* Summary input - always visible */}
+        <div className="w-full md:w-[300px] flex flex-col">
           <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
           <textarea
             value={summary}
             onChange={handleSummaryChange}
             placeholder="Write project summary..."
-            rows={4} // 🔥 4 rows height initially
-            className="px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
+            rows={4}
+            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
           />
         </div>
 
-
       </div>
+
+
 
 
       {/* Dynamic Content */}
@@ -326,10 +323,10 @@ export default function Home() {
           </motion.div>
         </AnimatePresence>
       </div>
+
     </div>
   );
 }
-
 
 function TabButton({ icon, label, isActive, onClick }) {
   return (
