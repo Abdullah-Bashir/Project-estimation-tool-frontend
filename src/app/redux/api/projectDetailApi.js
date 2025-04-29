@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = "http://localhost:5000/api/projects";  // Backend URL
+const API_URL = "https://project-estimation-tool-backend-production.up.railway.app/api/projects";  // Backend URL
 
 export const projectDetailApi = createApi({
     reducerPath: 'projectDetailApi',  // The name of the slice in the Redux store

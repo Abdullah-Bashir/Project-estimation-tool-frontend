@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,6 +32,7 @@ const createEmptyProject = () => ({
 });
 
 export default function Home() {
+
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
   const [projectName, setProjectName] = useState("Project Name");

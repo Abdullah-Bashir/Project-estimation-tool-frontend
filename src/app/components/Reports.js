@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -7,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { generateExcel } from "../components/excelGenerator";
 import { toast } from "react-toastify";
 import { useCreateOrUpdateProjectMutation, useGetAllProjectsQuery } from "../redux/api/projectDetailApi";
-
 
 export default function Reports() {
     const [rockSize, setRockSize] = useState("");
@@ -25,7 +25,9 @@ export default function Reports() {
     const tasks = currentProject?.reports?.tasks || [];
 
     const [createOrUpdateProject, { isLoading }] = useCreateOrUpdateProjectMutation();
+
     const { refetch } = useGetAllProjectsQuery();
+
 
     useEffect(() => {
         if (currentProject?.reports) {
@@ -123,7 +125,10 @@ export default function Reports() {
         const updatedProject = { ...currentProject, reports: { ...currentProject.reports, [key]: value } };
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
     };
+
+
     const handleSave = async () => {
+
         if (!isRockSizeCalculated) {
             toast.error("Please calculate Rock Size before saving");
             return;
@@ -186,6 +191,7 @@ export default function Reports() {
         );
     }
 
+
     return (
         <div className="min-h-screen p-4 flex justify-center transition-colors duration-300">
             <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-lg shadow-md w-full mx-2">
@@ -195,6 +201,7 @@ export default function Reports() {
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Reports</h1>
 
                     <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
+
                         {/* Export PDF */}
                         <button
                             className="flex items-center gap-2 bg-[#003399] hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
@@ -367,9 +374,6 @@ function FieldRow({ label, value, italic = false }) {
         </div>
     );
 }
-
-
-
 
 function EnhancedDropdownField({ label, value, onChange, options }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
