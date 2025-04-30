@@ -124,9 +124,18 @@ export default function Tasks() {
     };
 
     const handlePositiveNumberChange = (e, field) => {
-        const value = Math.max(0, Number(e.target.value));
-        setNewTask({ ...newTask, [field]: value });
+        const rawValue = e.target.value;
+        // Allow empty input for better UX
+        if (rawValue === "") {
+            setNewTask({ ...newTask, [field]: "" });
+            return;
+        }
+        const number = Number(rawValue);
+        if (!isNaN(number) && number >= 0) {
+            setNewTask({ ...newTask, [field]: number });
+        }
     };
+
 
     if (!currentProject) {
         return (
@@ -167,13 +176,14 @@ export default function Tasks() {
                         <InputField
                             label="Resources"
                             type="number"
-                            value={newTask.resources}
+                            value={newTask.resources === null ? "" : newTask.resources}
                             onChange={(e) => handlePositiveNumberChange(e, "resources")}
                         />
+
                         <InputField
                             label="Duration (Months)"
                             type="number"
-                            value={newTask.hours}
+                            value={newTask.hours === null ? "" : newTask.hours}
                             onChange={(e) => handlePositiveNumberChange(e, "hours")}
                         />
                     </div>
