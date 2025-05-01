@@ -5,7 +5,6 @@ import LordIconScript from "../components/lordiconScript";
 import EditTaskModal from "../popups/editTaskModal";
 
 export default function Tasks() {
-
     const initialProject = JSON.parse(localStorage.getItem("currentProject"));
 
     const [currentProject, setCurrentProject] = useState(initialProject);
@@ -44,6 +43,33 @@ export default function Tasks() {
         };
     }, []);
 
+    const calculateRockDetails = (taskList) => {
+        const totalHours = taskList.reduce((sum, task) => sum + Number(task.hours || 0), 0);
+        const totalResources = taskList.reduce((sum, task) => sum + Number(task.resources || 0), 0);
+        const departments = [...new Set(taskList.map(task => task.department))];
+        const departmentCount = departments.length;
+
+        let rockSize = "", useCase = "";
+
+        if (totalHours <= 3 && departmentCount <= 2) {
+            rockSize = "Small Rock";
+            useCase = `Summary: Quick wins with minimal disruption...`;
+        } else if (totalHours <= 6 && departmentCount <= 6) {
+            rockSize = "Medium Rock";
+            useCase = `Summary: Moderately complex projects...`;
+        } else if (totalHours <= 12 && departmentCount <= 6) {
+            rockSize = "Big Rock";
+            useCase = `Summary: Strategic, high-visibility efforts...`;
+        } else if (totalHours > 12 && departmentCount > 6) {
+            rockSize = "Boulder";
+            useCase = `Summary: Enterprise-wide transformations...`;
+        } else {
+            rockSize = "Custom Rock";
+            useCase = `This project does not fit typical categories. Review manually.`;
+        }
+
+        return { totalHours, totalResources, rockSize, useCase };
+    };
 
     const updateLocalStorage = (updatedProject) => {
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
@@ -57,15 +83,20 @@ export default function Tasks() {
     const addTask = () => {
         if (newTask.title && newTask.department && newTask.comment) {
             const updatedTasks = [...tasks, newTask];
+            const { totalHours, totalResources, rockSize, useCase } = calculateRockDetails(updatedTasks);
+
             const updatedProject = {
                 ...currentProject,
                 reports: {
                     ...currentProject.reports,
                     tasks: updatedTasks,
-                    totalHours: (currentProject?.reports?.totalHours || 0) + (newTask.hours || 0),
-                    totalResources: (currentProject?.reports?.totalResources || 0) + (newTask.resources || 0),
+                    totalHours,
+                    totalResources,
+                    rockSize,
+                    useCase,
                 },
             };
+
             updateLocalStorage(updatedProject);
             setCurrentProject(updatedProject);
             setTasks(updatedTasks);
@@ -78,15 +109,20 @@ export default function Tasks() {
         if (confirmDelete) {
             const updatedTasks = [...tasks];
             updatedTasks.splice(index, 1);
+            const { totalHours, totalResources, rockSize, useCase } = calculateRockDetails(updatedTasks);
+
             const updatedProject = {
                 ...currentProject,
                 reports: {
                     ...currentProject.reports,
                     tasks: updatedTasks,
-                    totalHours: updatedTasks.reduce((acc, task) => acc + (task.hours || 0), 0),
-                    totalResources: updatedTasks.reduce((acc, task) => acc + (task.resources || 0), 0),
+                    totalHours,
+                    totalResources,
+                    rockSize,
+                    useCase,
                 },
             };
+
             updateLocalStorage(updatedProject);
             setCurrentProject(updatedProject);
             setTasks(updatedTasks);
@@ -108,15 +144,20 @@ export default function Tasks() {
             resources: updatedTask.resources,
             duration: updatedTask.duration,
         };
+        const { totalHours, totalResources, rockSize, useCase } = calculateRockDetails(updatedTasks);
+
         const updatedProject = {
             ...currentProject,
             reports: {
                 ...currentProject.reports,
                 tasks: updatedTasks,
-                totalHours: updatedTasks.reduce((acc, task) => acc + (task.hours || 0), 0),
-                totalResources: updatedTasks.reduce((acc, task) => acc + (task.resources || 0), 0),
+                totalHours,
+                totalResources,
+                rockSize,
+                useCase,
             },
         };
+
         updateLocalStorage(updatedProject);
         setCurrentProject(updatedProject);
         setTasks(updatedTasks);
@@ -125,7 +166,6 @@ export default function Tasks() {
 
     const handlePositiveNumberChange = (e, field) => {
         const rawValue = e.target.value;
-        // Allow empty input for better UX
         if (rawValue === "") {
             setNewTask({ ...newTask, [field]: "" });
             return;
@@ -136,7 +176,6 @@ export default function Tasks() {
         }
     };
 
-
     if (!currentProject) {
         return (
             <div className="h-screen flex justify-center items-center text-gray-500 dark:text-gray-300 text-lg">
@@ -144,6 +183,7 @@ export default function Tasks() {
             </div>
         );
     }
+
 
     return (
         <div className={`min-h-screen w-full p-6 ${isEditOpen ? "backdrop-blur-sm" : ""} transition-all duration-300`}>
@@ -153,6 +193,17 @@ export default function Tasks() {
             <div className="mx-auto mb-6 md:mb-8">
                 <div className="rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 hover:shadow-xl md:hover:shadow-2xl transition-all bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 md:mb-6">Add New Task</h2>
+
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="text-left">
+                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 uppercase">Total Duration</div>
+                            <div className="text-2xl md:text-3xl font-bold text-[#00CCFF] dark:text-white">{currentProject?.reports?.totalHours || 0}</div>
+                        </div>
+                        <div className="text-left">
+                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 uppercase">Total Resources</div>
+                            <div className="text-2xl md:text-3xl font-bold text-[#00CCFF] dark:text-white">{currentProject?.reports?.totalResources || 0}</div>
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <InputField

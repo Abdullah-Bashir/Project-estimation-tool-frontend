@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -35,8 +34,37 @@ export default function Reports() {
             setPillar(currentProject.reports.pillar || "");
             setMethodology(currentProject.reports.methodology || "");
             setEmail(currentProject.reports.email || "");
+
+            // 👇 ADD THIS
+            setRockSize(currentProject.reports.rockSize || "");
+            setUseCase(currentProject.reports.useCase || "");
         }
     }, [currentProject]);
+
+
+
+
+
+    const handleCapabilityChange = (value) => {
+        setCapability(value);
+        updateLocalStorage("capability", value);
+        setIsRockSizeCalculated(false);
+    };
+    const handlePillarChange = (value) => {
+        setPillar(value);
+        updateLocalStorage("pillar", value);
+        setIsRockSizeCalculated(false);
+    };
+    const handleMethodologyChange = (value) => {
+        setMethodology(value);
+        updateLocalStorage("methodology", value);
+        setIsRockSizeCalculated(false);
+    };
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+        updateLocalStorage("email", e.target.value);
+        setIsRockSizeCalculated(false);
+    };
 
 
     const calculateRockSize = () => {
@@ -101,39 +129,13 @@ export default function Reports() {
         setIsModalOpen(true);
         setIsRockSizeCalculated(true);
     };
-    const handleCapabilityChange = (value) => {
-        setCapability(value);
-        updateLocalStorage("capability", value);
-        setIsRockSizeCalculated(false);
-    };
-    const handlePillarChange = (value) => {
-        setPillar(value);
-        updateLocalStorage("pillar", value);
-        setIsRockSizeCalculated(false);
-    };
-    const handleMethodologyChange = (value) => {
-        setMethodology(value);
-        updateLocalStorage("methodology", value);
-        setIsRockSizeCalculated(false);
-    };
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-        updateLocalStorage("email", e.target.value);
-        setIsRockSizeCalculated(false);
-    };
+
     const updateLocalStorage = (key, value) => {
         const updatedProject = { ...currentProject, reports: { ...currentProject.reports, [key]: value } };
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
     };
 
-
     const handleSave = async () => {
-
-        if (!isRockSizeCalculated) {
-            toast.error("Please calculate Rock Size before saving");
-            return;
-        }
-
         const formattedTasks = tasks.map((task) => ({
             title: task.title || "",
             department: task.department || "-",
@@ -149,15 +151,16 @@ export default function Reports() {
                 capability,
                 pillar,
                 methodology,
-                email,
+                email: email?.trim() || "N/A", // ← fix here
                 rockSize,
                 useCase,
-                summary: currentProject?.reports?.summary || "-", // ✅ now summary included
+                summary: currentProject?.reports?.summary || "-",
                 totalHours: tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0),
                 totalResources: tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0),
                 tasks: formattedTasks,
             },
         };
+
 
         try {
             const response = await createOrUpdateProject(projectData).unwrap();
@@ -182,7 +185,6 @@ export default function Reports() {
     };
 
 
-
     if (!currentProject) {
         return (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400">
@@ -190,7 +192,6 @@ export default function Reports() {
             </div>
         );
     }
-
 
     return (
         <div className="min-h-screen p-4 flex justify-center transition-colors duration-300">
@@ -233,12 +234,13 @@ export default function Reports() {
 
                         {/* Save Project */}
                         <button
-                            className={`flex items-center gap-2 ${rockSize ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'} text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base`}
+                            className={`flex items-center gap-2 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base`}
                             onClick={handleSave}
-                            disabled={!rockSize || isLoading}
+                            disabled={isLoading}
                         >
                             {isLoading ? 'Saving...' : 'Save Project'}
                         </button>
+
                     </div>
 
                 </div>
@@ -294,86 +296,6 @@ export default function Reports() {
 
 
 
-function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }) {
-    if (!useCase) return null;
-
-    // Split useCase into Summary and Examples
-    const [summaryPart, examplesPart] = useCase.split("Examples:");
-
-    return (
-        <AnimatePresence>
-            {isModalOpen && (
-                <motion.div
-                    className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setIsModalOpen(false)}
-                >
-                    <motion.div
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-0 w-full max-w-md"
-                        initial={{ scale: 0.95 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0.95 }}
-                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className="bg-[#003399] px-4 py-2 rounded-t-lg flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-white">Rock Size Details</h2>
-                            <motion.button
-                                whileHover={{ rotate: 90 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setIsModalOpen(false)}
-                                className="p-1 rounded-full hover:bg-blue-900/20"
-                            >
-                                <FiX className="w-4 h-4 text-white" />
-                            </motion.button>
-                        </div>
-
-                        {/* Body */}
-                        <div className="p-4 space-y-3">
-                            {/* Predicted Size */}
-                            <FieldRow label="Predicted Size" value={rockSize} />
-                            {/* Summary */}
-                            {summaryPart && <FieldRow label="Summary" value={summaryPart.replace("Summary:", "").trim()} />}
-                            {/* Examples */}
-                            {examplesPart && <FieldRow label="Examples" value={examplesPart.trim()} italic />}
-                            {/* Resources */}
-                            <FieldRow label="Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
-                            {/* Hours */}
-                            <FieldRow label="Hours" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
-
-                            {/* Close button */}
-                            <div className="flex justify-end">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 text-sm font-medium rounded-md bg-[#003399] text-white hover:bg-indigo-700 transition"
-                                >
-                                    Close
-                                </motion.button>
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
-}
-
-// Helper compact field
-function FieldRow({ label, value, italic = false }) {
-    return (
-        <div className="grid grid-cols-3 gap-2 text-sm">
-            <div className="font-medium text-gray-600 dark:text-gray-300">{label}</div>
-            <div className={`col-span-2 text-gray-800 dark:text-gray-200 ${italic ? 'italic' : ''}`}>
-                {value}
-            </div>
-        </div>
-    );
-}
 
 function EnhancedDropdownField({ label, value, onChange, options }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -501,6 +423,89 @@ function ValidationModal({ isOpen, onClose, missingFields }) {
             )}
         </AnimatePresence>
     )
+}
+
+function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }) {
+    if (!useCase) return null;
+
+    // Split useCase into Summary and Examples
+    const [summaryPart, examplesPart] = useCase.split("Examples:");
+
+    return (
+        <AnimatePresence>
+            {isModalOpen && (
+                <motion.div
+                    className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <motion.div
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-0 w-full max-w-md"
+                        initial={{ scale: 0.95 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0.95 }}
+                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="bg-[#003399] px-4 py-2 rounded-t-lg flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">Rock Size Details</h2>
+                            <motion.button
+                                whileHover={{ rotate: 90 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setIsModalOpen(false)}
+                                className="p-1 rounded-full hover:bg-blue-900/20"
+                            >
+                                <FiX className="w-4 h-4 text-white" />
+                            </motion.button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-4 space-y-3">
+                            {/* Predicted Size */}
+                            <FieldRow label="Predicted Size" value={rockSize} />
+                            {/* Summary */}
+                            {summaryPart && <FieldRow label="Summary" value={summaryPart.replace("Summary:", "").trim()} />}
+                            {/* Examples */}
+                            {examplesPart && <FieldRow label="Examples" value={examplesPart.trim()} italic />}
+                            {/* Resources */}
+                            <FieldRow label="Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
+                            {/* Hours */}
+                            <FieldRow label="Hours" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
+
+                            {/* Close button */}
+                            <div className="flex justify-end">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-medium rounded-md bg-[#003399] text-white hover:bg-indigo-700 transition"
+                                >
+                                    Close
+                                </motion.button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
+
+
+
+// Helper compact field
+function FieldRow({ label, value, italic = false }) {
+    return (
+        <div className="grid grid-cols-3 gap-2 text-sm">
+            <div className="font-medium text-gray-600 dark:text-gray-300">{label}</div>
+            <div className={`col-span-2 text-gray-800 dark:text-gray-200 ${italic ? 'italic' : ''}`}>
+                {value}
+            </div>
+        </div>
+    );
 }
 
 // Helper Components
