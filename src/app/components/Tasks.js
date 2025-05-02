@@ -191,8 +191,11 @@ export default function Tasks() {
 
             {/* Add Task Form */}
             <div className="mx-auto mb-6 md:mb-8">
+
                 <div className="rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 hover:shadow-xl md:hover:shadow-2xl transition-all bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 md:mb-6">Add New Task</h2>
+
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-left">
@@ -345,6 +348,7 @@ export default function Tasks() {
             {isEditOpen && (
                 <EditTaskModal task={taskBeingEdited} onClose={() => setIsEditOpen(false)} onSave={saveEditedTask} />
             )}
+
         </div>
     );
 }
