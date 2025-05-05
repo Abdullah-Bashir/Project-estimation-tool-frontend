@@ -91,25 +91,38 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // ✅ Use Case: Display full raw string (no splitTextToSize, no trimming)
+        // Improved Use Case section
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
-            nextY += 6;
+
+            // Set styling for the actual use case text
             doc.setTextColor("#003399");
+            doc.setFontSize(10);
 
-            const maxHeight = 270;
-            const options = { maxWidth: 160, lineHeightFactor: 1.5 };
+            // Split the text into lines (handling both explicit newlines and automatic wrapping)
+            const useCaseLines = doc.splitTextToSize(useCase, 180);
 
-            if (nextY > maxHeight - 20) {
+            // Check if we need a new page before starting
+            if (nextY + useCaseLines.length * 6 > 270) {
                 doc.addPage();
                 nextY = 20;
+            } else {
+                nextY += 6; // Add some space after the "Use Case:" label
             }
 
-            doc.setFontSize(10);
-            doc.text(useCase, 40, nextY, options);
-            const lineCount = useCase.split("\n").length + 2;
-            nextY += lineCount * 6;
+            // Add each line of text
+            useCaseLines.forEach(line => {
+                if (nextY > 270) { // Check if we need a new page mid-text
+                    doc.addPage();
+                    nextY = 20;
+                }
+                doc.text(line, 15, nextY);
+                nextY += 6; // Line height
+            });
+
+            // Add extra space after the use case
+            nextY += 4;
         }
 
         // Table start
