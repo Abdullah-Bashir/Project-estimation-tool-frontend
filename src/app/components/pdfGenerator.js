@@ -165,6 +165,6 @@ export const generatePdf = async () => {
 
     } catch (error) {
         console.error("PDF generation error:", error);
-        alert("Failed to generate PDF. Please try again.");
+        alert("Failed to generate PDF. Try again.");
     }
 };
