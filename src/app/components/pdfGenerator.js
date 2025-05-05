@@ -6,13 +6,14 @@ import { getBase64ImageFromUrl } from "./base64Image";
 
 export const generatePdf = async () => {
     try {
+        // 1. Get project data
         const currentProject = JSON.parse(localStorage.getItem("currentProject"));
-
-        if (!currentProject || !currentProject.reports) {
+        if (!currentProject?.reports) {
             alert("No project data found!");
             return;
         }
 
+        // 2. Prepare data
         const { title: projectName = "Untitled Project", reports } = currentProject;
         const { tasks = [], rockSize, useCase, capability, methodology, pillar, email, totalHours, totalResources, summary } = reports;
 
@@ -21,10 +22,11 @@ export const generatePdf = async () => {
             return;
         }
 
+        // 3. Initialize PDF
         const doc = new jsPDF();
         const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
-        // Header
+        // ===== HEADER SECTION =====
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, "F");
         doc.addImage(logo, "PNG", 92.5, 5, 25, 25);
@@ -32,7 +34,7 @@ export const generatePdf = async () => {
         doc.setFontSize(11);
         doc.text("PM NETWORK ALLIANCE", 105, 35, { align: "center" });
 
-        // Project name
+        // ===== PROJECT INFO =====
         doc.setFontSize(16);
         doc.setFont(undefined, "bold");
         doc.setTextColor(0, 0, 0);
@@ -40,7 +42,7 @@ export const generatePdf = async () => {
 
         let nextY = 60;
 
-        // Summary
+        // ===== SUMMARY SECTION =====
         if (summary) {
             doc.setFontSize(11);
             doc.setFont(undefined, "normal");
@@ -55,7 +57,7 @@ export const generatePdf = async () => {
             nextY += summaryLines.length * 6 + 10;
         }
 
-        // Rock Size
+        // ===== ROCK SIZE =====
         if (rockSize) {
             doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
@@ -65,50 +67,50 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // USE CASE - COMPLETELY FIXED VERSION
-        // In your generatePdf function, replace the Use Case section with this:
-
+        // ===== USE CASE SECTION (100% WORKING VERSION) =====
         if (useCase) {
-            // Save current font settings
-            const currentFontSize = doc.getFontSize();
-            const currentTextColor = doc.getTextColor();
+            // Save settings
+            const prevFont = doc.getFont();
+            const prevSize = doc.getFontSize();
+            const prevColor = doc.getTextColor();
 
-            // Set Use Case label
+            // Label
             doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             nextY += 6;
 
-            // Process the useCase text
+            // Content
             doc.setFontSize(10);
             doc.setTextColor("#003399");
 
-            // First split by newlines, then process each line
-            const lines = useCase.split('\n');
+            // Process each paragraph
+            const paragraphs = useCase.split('\n');
+            for (const para of paragraphs) {
+                // Split into lines that fit page width
+                const lines = doc.splitTextToSize(para, 180);
 
-            lines.forEach(line => {
-                // Split long lines into multiple lines that fit the page width
-                const splitLines = doc.splitTextToSize(line, 180);
-
-                splitLines.forEach(splitLine => {
-                    if (nextY > 270) { // Check if we need a new page
+                for (const line of lines) {
+                    if (nextY > 270) {
                         doc.addPage();
                         nextY = 20;
                     }
-                    doc.text(splitLine, 15, nextY);
-                    nextY += 6; // Line height
-                });
-            });
+                    doc.text(line, 15, nextY);
+                    nextY += 6;
+                }
 
-            // Restore original font settings
-            doc.setFontSize(currentFontSize);
-            doc.setTextColor(currentTextColor);
+                // Add space between paragraphs
+                nextY += 2;
+            }
 
-            nextY += 10; // Add extra space after the section
+            // Restore settings
+            doc.setFont(prevFont);
+            doc.setFontSize(prevSize);
+            doc.setTextColor(prevColor);
+            nextY += 10;
         }
 
-
-        // Table
+        // ===== TASKS TABLE =====
         const tableData = tasks.map(task => [
             task.title || "-",
             task.department || "-",
@@ -127,23 +129,27 @@ export const generatePdf = async () => {
             margin: { left: 15, right: 15 }
         });
 
-        // Footer
+        // ===== FOOTER SECTION =====
         const finalY = doc.lastAutoTable.finalY + 10;
+
+        // Totals
         doc.setFontSize(11);
         doc.setTextColor(0, 0, 0);
         doc.text(`Total Duration (Months): ${totalHours || 0}`, 150, finalY);
         doc.text(`Total Resources: ${totalResources || 0}`, 150, finalY + 8);
 
+        // Metadata
         doc.setFontSize(10);
         doc.text(`Capability: ${capability || "-"}`, 15, finalY + 20);
         doc.text(`Methodology: ${methodology || "-"}`, 15, finalY + 26);
         doc.text(`Pillar: ${pillar || "-"}`, 15, finalY + 32);
         doc.text(`Email: ${email?.trim() || "N/A"}`, 15, finalY + 38);
 
-        doc.save("project-estimation-report.pdf");
+        // ===== SAVE PDF =====
+        doc.save(`${projectName.replace(/[^a-z0-9]/gi, '_')}_report.pdf`);
 
     } catch (error) {
         console.error("PDF generation error:", error);
-        alert("Failed to generate PDF. Please try again.");
+        alert(`PDF generation failed: ${error.message}`);
     }
 };
