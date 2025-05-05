@@ -67,6 +67,10 @@ export const generatePdf = async () => {
             doc.setTextColor(80, 80, 80);
 
             const summaryLines = doc.splitTextToSize(summary, 180);
+            if (nextY + summaryLines.length * 6 > 270) {
+                doc.addPage();
+                nextY = 20;
+            }
             doc.text(summaryLines, 15, nextY);
             nextY += summaryLines.length * 6 + 4;
         }
@@ -76,6 +80,10 @@ export const generatePdf = async () => {
         doc.setFont(undefined, "normal");
 
         if (rockSize) {
+            if (nextY + 10 > 270) {
+                doc.addPage();
+                nextY = 20;
+            }
             doc.setTextColor(0, 0, 0);
             doc.text("Predicted Size:", 15, nextY);
             doc.setTextColor("#003399");
@@ -83,25 +91,34 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // Use Case (proper wrapping)
+        // Use Case (with proper wrapping + page break handling)
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
+            nextY += 6;
             doc.setTextColor("#003399");
 
             const [summaryPart, examplesPart] = useCase.split("Examples:");
 
+            const wrapAndRender = (label, text) => {
+                const lines = doc.splitTextToSize(`${label} ${text.trim()}`, 150);
+                const maxY = 270;
+
+                if (nextY + lines.length * 6 > maxY) {
+                    doc.addPage();
+                    nextY = 20;
+                }
+
+                doc.text(lines, 40, nextY);
+                nextY += lines.length * 6 + 4;
+            };
+
             if (summaryPart) {
-                const summaryText = summaryPart.replace("Summary:", "").trim();
-                const summaryLines = doc.splitTextToSize(`Summary: ${summaryText}`, 150);
-                doc.text(summaryLines, 40, nextY);
-                nextY += summaryLines.length * 6 + 2;
+                wrapAndRender("Summary:", summaryPart.replace("Summary:", "").trim());
             }
 
             if (examplesPart) {
-                const exampleLines = doc.splitTextToSize(`Examples: ${examplesPart.trim()}`, 150);
-                doc.text(exampleLines, 40, nextY);
-                nextY += exampleLines.length * 6 + 4;
+                wrapAndRender("Examples:", examplesPart.trim());
             }
         }
 
