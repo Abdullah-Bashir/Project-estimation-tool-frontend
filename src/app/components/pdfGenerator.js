@@ -91,23 +91,27 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // Use Case (fixed version: wrapped & paginated properly)
+        // ✅ Use Case: FIXED VERSION (no '...', handles newlines)
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             nextY += 6;
             doc.setTextColor("#003399");
 
-            const useCaseLines = doc.splitTextToSize(useCase, 160);
-            for (let i = 0; i < useCaseLines.length; i++) {
-                if (nextY > 270) {
-                    doc.addPage();
-                    nextY = 20;
+            const paragraphs = useCase.split("\n");
+
+            for (const paragraph of paragraphs) {
+                const lines = doc.splitTextToSize(paragraph.trim(), 160);
+                for (const line of lines) {
+                    if (nextY > 270) {
+                        doc.addPage();
+                        nextY = 20;
+                    }
+                    doc.text(line, 40, nextY);
+                    nextY += 6;
                 }
-                doc.text(useCaseLines[i], 40, nextY);
-                nextY += 6;
+                nextY += 4; // space between paragraphs
             }
-            nextY += 4;
         }
 
         // Table start
