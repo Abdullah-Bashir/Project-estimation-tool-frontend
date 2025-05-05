@@ -66,35 +66,47 @@ export const generatePdf = async () => {
         }
 
         // USE CASE - COMPLETELY FIXED VERSION
+        // In your generatePdf function, replace the Use Case section with this:
+
         if (useCase) {
+            // Save current font settings
+            const currentFontSize = doc.getFontSize();
+            const currentTextColor = doc.getTextColor();
+
+            // Set Use Case label
             doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             nextY += 6;
 
-            // First split by newlines, then split each line to fit page width
-            const rawLines = useCase.split('\n');
-            let processedLines = [];
-
-            rawLines.forEach(line => {
-                const wrappedLines = doc.splitTextToSize(line, 180);
-                processedLines = processedLines.concat(wrappedLines);
-            });
-
+            // Process the useCase text
             doc.setFontSize(10);
             doc.setTextColor("#003399");
 
-            processedLines.forEach(line => {
-                if (nextY > 270) {
-                    doc.addPage();
-                    nextY = 20;
-                }
-                doc.text(line, 15, nextY);
-                nextY += 6;
+            // First split by newlines, then process each line
+            const lines = useCase.split('\n');
+
+            lines.forEach(line => {
+                // Split long lines into multiple lines that fit the page width
+                const splitLines = doc.splitTextToSize(line, 180);
+
+                splitLines.forEach(splitLine => {
+                    if (nextY > 270) { // Check if we need a new page
+                        doc.addPage();
+                        nextY = 20;
+                    }
+                    doc.text(splitLine, 15, nextY);
+                    nextY += 6; // Line height
+                });
             });
 
-            nextY += 10;
+            // Restore original font settings
+            doc.setFontSize(currentFontSize);
+            doc.setTextColor(currentTextColor);
+
+            nextY += 10; // Add extra space after the section
         }
+
 
         // Table
         const tableData = tasks.map(task => [
