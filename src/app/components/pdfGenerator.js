@@ -91,35 +91,23 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // Use Case (with proper wrapping + page break handling)
+        // Use Case (fixed version: wrapped & paginated properly)
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             nextY += 6;
             doc.setTextColor("#003399");
 
-            const [summaryPart, examplesPart] = useCase.split("Examples:");
-
-            const wrapAndRender = (label, text) => {
-                const lines = doc.splitTextToSize(`${label} ${text.trim()}`, 150);
-                const maxY = 270;
-
-                if (nextY + lines.length * 6 > maxY) {
+            const useCaseLines = doc.splitTextToSize(useCase, 160);
+            for (let i = 0; i < useCaseLines.length; i++) {
+                if (nextY > 270) {
                     doc.addPage();
                     nextY = 20;
                 }
-
-                doc.text(lines, 40, nextY);
-                nextY += lines.length * 6 + 4;
-            };
-
-            if (summaryPart) {
-                wrapAndRender("Summary:", summaryPart.replace("Summary:", "").trim());
+                doc.text(useCaseLines[i], 40, nextY);
+                nextY += 6;
             }
-
-            if (examplesPart) {
-                wrapAndRender("Examples:", examplesPart.trim());
-            }
+            nextY += 4;
         }
 
         // Table start
