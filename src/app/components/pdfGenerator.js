@@ -91,27 +91,25 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // ✅ Use Case: FIXED VERSION (no '...', handles newlines)
+        // ✅ Use Case: Display full raw string (no splitTextToSize, no trimming)
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             nextY += 6;
             doc.setTextColor("#003399");
 
-            const paragraphs = useCase.split("\n");
+            const maxHeight = 270;
+            const options = { maxWidth: 160, lineHeightFactor: 1.5 };
 
-            for (const paragraph of paragraphs) {
-                const lines = doc.splitTextToSize(paragraph.trim(), 160);
-                for (const line of lines) {
-                    if (nextY > 270) {
-                        doc.addPage();
-                        nextY = 20;
-                    }
-                    doc.text(line, 40, nextY);
-                    nextY += 6;
-                }
-                nextY += 4; // space between paragraphs
+            if (nextY > maxHeight - 20) {
+                doc.addPage();
+                nextY = 20;
             }
+
+            doc.setFontSize(10);
+            doc.text(useCase, 40, nextY, options);
+            const lineCount = useCase.split("\n").length + 2;
+            nextY += lineCount * 6;
         }
 
         // Table start
