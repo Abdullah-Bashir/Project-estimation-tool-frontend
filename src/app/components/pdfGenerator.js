@@ -83,6 +83,7 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
+        // Use Case (proper wrapping)
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
@@ -92,7 +93,7 @@ export const generatePdf = async () => {
 
             if (summaryPart) {
                 const summaryText = summaryPart.replace("Summary:", "").trim();
-                const summaryLines = doc.splitTextToSize(summaryText, 150);
+                const summaryLines = doc.splitTextToSize(`Summary: ${summaryText}`, 150);
                 doc.text(summaryLines, 40, nextY);
                 nextY += summaryLines.length * 6 + 2;
             }
