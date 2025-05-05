@@ -36,11 +36,6 @@ export const generatePdf = async () => {
             return;
         }
 
-        if (!rockSize || !useCase) {
-            alert("Please calculate Rock Size first!");
-            return;
-        }
-
         const doc = new jsPDF();
         const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
 
@@ -62,40 +57,55 @@ export const generatePdf = async () => {
         doc.setTextColor(0, 0, 0);
         doc.text(projectName, 15, 52);
 
-        // Project summary below project name
-        let nextY = 58;
+        // Start Y position for dynamic content
+        let nextY = 60;
+
+        // Summary block
         if (summary) {
             doc.setFontSize(11);
             doc.setFont(undefined, "normal");
             doc.setTextColor(80, 80, 80);
-            doc.text(summary, 15, nextY, { maxWidth: 180 });
-            nextY += 10;
+
+            const summaryLines = doc.splitTextToSize(summary, 180);
+            doc.text(summaryLines, 15, nextY);
+            nextY += summaryLines.length * 6 + 4;
         }
 
         // Prediction info
         doc.setFontSize(11);
         doc.setFont(undefined, "normal");
 
-        doc.setTextColor(0, 0, 0);
-        doc.text("Predicted Size:", 15, nextY);
-        doc.setTextColor("#003399");
-        doc.text(rockSize, 50, nextY);
-        nextY += 7;
-
-        doc.setTextColor(0, 0, 0);
-        doc.text("Use Case:", 15, nextY);
-        doc.setTextColor("#003399");
-
-        const [summaryPart, examplesPart] = useCase.split("Examples:");
-        if (summaryPart) {
-            doc.text(summaryPart.replace("Summary:", "").trim(), 40, nextY, { maxWidth: 150 });
-        }
-        if (examplesPart) {
-            doc.text(`Examples: ${examplesPart.trim()}`, 40, nextY + 8, { maxWidth: 150 });
+        if (rockSize) {
+            doc.setTextColor(0, 0, 0);
+            doc.text("Predicted Size:", 15, nextY);
+            doc.setTextColor("#003399");
+            doc.text(rockSize, 50, nextY);
+            nextY += 10;
         }
 
-        // Table position
-        const tableStartY = examplesPart ? nextY + 18 : nextY + 10;
+        if (useCase) {
+            doc.setTextColor(0, 0, 0);
+            doc.text("Use Case:", 15, nextY);
+            doc.setTextColor("#003399");
+
+            const [summaryPart, examplesPart] = useCase.split("Examples:");
+
+            if (summaryPart) {
+                const summaryText = summaryPart.replace("Summary:", "").trim();
+                const summaryLines = doc.splitTextToSize(summaryText, 150);
+                doc.text(summaryLines, 40, nextY);
+                nextY += summaryLines.length * 6 + 2;
+            }
+
+            if (examplesPart) {
+                const exampleLines = doc.splitTextToSize(`Examples: ${examplesPart.trim()}`, 150);
+                doc.text(exampleLines, 40, nextY);
+                nextY += exampleLines.length * 6 + 4;
+            }
+        }
+
+        // Table start
+        const tableStartY = nextY + 6;
 
         const tableData = tasks.map(task => [
             task.title || "-",
@@ -115,7 +125,7 @@ export const generatePdf = async () => {
             margin: { left: 15, right: 15 }
         });
 
-        // Total summary
+        // Totals
         const afterTableY = doc.lastAutoTable.finalY + 10;
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(11);
@@ -124,15 +134,15 @@ export const generatePdf = async () => {
         doc.text(`Total Duration (Months): ${totalHours || 0}`, 150, afterTableY);
         doc.text(`Total Resources: ${totalResources || 0}`, 150, afterTableY + 8);
 
-        // Footer info
+        // Footer
         const footerY = afterTableY + 25;
         doc.setFontSize(10);
         doc.text(`Capability: ${capability || "-"}`, 15, footerY);
         doc.text(`Methodology: ${methodology || "-"}`, 15, footerY + 6);
         doc.text(`Pillar: ${pillar || "-"}`, 15, footerY + 12);
-        doc.text(`Email: ${email || "-"}`, 15, footerY + 18);
+        doc.text(`Email: ${email?.trim() || "N/A"}`, 15, footerY + 18);
 
-        // Save PDF
+        // Save
         doc.save("project-estimation-report.pdf");
 
     } catch (error) {

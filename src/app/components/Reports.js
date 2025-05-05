@@ -193,6 +193,7 @@ export default function Reports() {
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-10 gap-4">
+
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Reports</h1>
 
                     <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
@@ -201,10 +202,6 @@ export default function Reports() {
                         <button
                             className="flex items-center gap-2 bg-[#003399] hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
                             onClick={async () => {
-                                if (!isRockSizeCalculated) {
-                                    toast.error("Please calculate Rock Size before exporting PDF.");
-                                    return;
-                                }
                                 const { generatePdf } = await import("../components/pdfGenerator");
                                 generatePdf(tasks, rockSize, useCase);
                             }}
@@ -216,10 +213,6 @@ export default function Reports() {
                         <button
                             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
                             onClick={() => {
-                                if (!isRockSizeCalculated) {
-                                    toast.error("Please calculate Rock Size before exporting Excel.");
-                                    return;
-                                }
                                 generateExcel(tasks, rockSize, useCase);
                             }}
                         >
@@ -236,6 +229,7 @@ export default function Reports() {
                         </button>
 
                     </div>
+
 
                 </div>
 
