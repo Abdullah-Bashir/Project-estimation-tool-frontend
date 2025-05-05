@@ -199,7 +199,7 @@ export default function Tasks() {
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-left">
-                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 uppercase">Total Duration</div>
+                            <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 uppercase">Total Duration (Months)</div>
                             <div className="text-2xl md:text-3xl font-bold text-[#00CCFF] dark:text-white">{currentProject?.reports?.totalHours || 0}</div>
                         </div>
                         <div className="text-left">

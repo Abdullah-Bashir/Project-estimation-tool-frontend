@@ -248,11 +248,13 @@ const EnhancedSelectField = ({ label, options, value, onChange }) => {
                 {/* Hidden select for form submission */}
                 <select value={value} onChange={(e) => onChange(e.target.value)} className="sr-only" aria-hidden="true">
                     <option value="">{`Select ${label}`}</option>
+
                     {options.map((option, idx) => (
                         <option key={idx} value={option}>
                             {option}
                         </option>
                     ))}
+
                 </select>
             </div>
         </div>

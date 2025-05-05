@@ -13,8 +13,23 @@ export const generatePdf = async () => {
             return;
         }
 
-        const { title: projectName = "Untitled Project", reports } = currentProject;
-        const { tasks = [], rockSize, useCase, capability, methodology, pillar, email, totalHours, totalResources } = reports;
+        const {
+            title: projectName = "Untitled Project",
+            reports
+        } = currentProject;
+
+        const {
+            tasks = [],
+            rockSize,
+            useCase,
+            capability,
+            methodology,
+            pillar,
+            email,
+            totalHours,
+            totalResources,
+            summary
+        } = reports;
 
         if (!tasks.length) {
             alert("No tasks to export!");
@@ -31,7 +46,7 @@ export const generatePdf = async () => {
 
         // Top black header bar
         doc.setFillColor(0, 0, 0);
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.rect(0, 0, 210, 40, "F");
 
         // Centered Logo
         doc.addImage(logo, "PNG", 92.5, 5, 25, 25);
@@ -47,30 +62,41 @@ export const generatePdf = async () => {
         doc.setTextColor(0, 0, 0);
         doc.text(projectName, 15, 52);
 
+        // Project summary below project name
+        let nextY = 58;
+        if (summary) {
+            doc.setFontSize(11);
+            doc.setFont(undefined, "normal");
+            doc.setTextColor(80, 80, 80);
+            doc.text(summary, 15, nextY, { maxWidth: 180 });
+            nextY += 10;
+        }
+
         // Prediction info
         doc.setFontSize(11);
         doc.setFont(undefined, "normal");
 
         doc.setTextColor(0, 0, 0);
-        doc.text("Predicted Size:", 15, 60);
+        doc.text("Predicted Size:", 15, nextY);
         doc.setTextColor("#003399");
-        doc.text(rockSize, 50, 60);
+        doc.text(rockSize, 50, nextY);
+        nextY += 7;
 
         doc.setTextColor(0, 0, 0);
-        doc.text("Use Case:", 15, 67);
+        doc.text("Use Case:", 15, nextY);
         doc.setTextColor("#003399");
 
-        // 🧠 Format Summary and Examples cleanly
         const [summaryPart, examplesPart] = useCase.split("Examples:");
         if (summaryPart) {
-            doc.text(summaryPart.replace("Summary:", "").trim(), 40, 67, { maxWidth: 150 });
+            doc.text(summaryPart.replace("Summary:", "").trim(), 40, nextY, { maxWidth: 150 });
         }
         if (examplesPart) {
-            doc.text(`Examples: ${examplesPart.trim()}`, 40, 75, { maxWidth: 150 });
+            doc.text(`Examples: ${examplesPart.trim()}`, 40, nextY + 8, { maxWidth: 150 });
         }
 
-        // Table
-        const tableStartY = examplesPart ? 85 : 75;
+        // Table position
+        const tableStartY = examplesPart ? nextY + 18 : nextY + 10;
+
         const tableData = tasks.map(task => [
             task.title || "-",
             task.department || "-",
@@ -106,6 +132,7 @@ export const generatePdf = async () => {
         doc.text(`Pillar: ${pillar || "-"}`, 15, footerY + 12);
         doc.text(`Email: ${email || "-"}`, 15, footerY + 18);
 
+        // Save PDF
         doc.save("project-estimation-report.pdf");
 
     } catch (error) {

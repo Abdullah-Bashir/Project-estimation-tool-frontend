@@ -30,6 +30,7 @@ export default function Reports() {
 
     useEffect(() => {
         if (currentProject?.reports) {
+
             setCapability(currentProject.reports.capability || "");
             setPillar(currentProject.reports.pillar || "");
             setMethodology(currentProject.reports.methodology || "");
@@ -40,9 +41,6 @@ export default function Reports() {
             setUseCase(currentProject.reports.useCase || "");
         }
     }, [currentProject]);
-
-
-
 
 
     const handleCapabilityChange = (value) => {
@@ -65,8 +63,6 @@ export default function Reports() {
         updateLocalStorage("email", e.target.value);
         setIsRockSizeCalculated(false);
     };
-
-
     const calculateRockSize = () => {
         const missing = [];
         if (!capability) missing.push("Capability");
@@ -129,12 +125,10 @@ export default function Reports() {
         setIsModalOpen(true);
         setIsRockSizeCalculated(true);
     };
-
     const updateLocalStorage = (key, value) => {
         const updatedProject = { ...currentProject, reports: { ...currentProject.reports, [key]: value } };
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
     };
-
     const handleSave = async () => {
         const formattedTasks = tasks.map((task) => ({
             title: task.title || "",
@@ -249,7 +243,7 @@ export default function Reports() {
                 <div className="mb-8 sm:mb-12">
                     <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Executive Summary</h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <SummaryCard label="Total Duration" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
+                        <SummaryCard label="Total Duration (Months)" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
                         <SummaryCard label="Total Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
                     </div>
                 </div>
@@ -473,7 +467,7 @@ function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }
                             {/* Resources */}
                             <FieldRow label="Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
                             {/* Hours */}
-                            <FieldRow label="Hours" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
+                            <FieldRow label="Duration (Months)" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
 
                             {/* Close button */}
                             <div className="flex justify-end">
