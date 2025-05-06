@@ -119,26 +119,30 @@ export const generatePdf = async () => {
             doc.setTextColor("#003399");
 
             const useCaseText = safeString(useCase);
+
+            // Split by paragraphs
             const paragraphs = useCaseText.split('\n').filter(p => p.trim());
 
             for (const para of paragraphs) {
-                const lines = doc.splitTextToSize(para, 180);  // This handles wrapping text to the next line based on width
+                const lines = doc.splitTextToSize(para, 180);  // Wrap text if it exceeds the line width
 
                 for (const line of lines) {
-                    // Check if content is about to overflow (end of page), and if so, add a new page
-                    if (currentY + 6 > 270) {  // Check if current line would overflow
+                    // Check if adding this line will overflow the page, if yes, add a new page
+                    if (currentY + 6 > 270) {  // If text exceeds the page height (e.g., 270mm for A4)
                         doc.addPage();
-                        currentY = 20;
+                        currentY = 20; // Reset to top of the new page
                     }
 
-                    doc.text(line, 15, currentY);
-                    currentY += 6;  // Adjust line height if needed
+                    doc.text(line, 15, currentY);  // Display the line of text
+                    currentY += 6;  // Move down for the next line
                 }
 
-                currentY += 10; // Add space between paragraphs
+                currentY += 10; // Space between paragraphs
             }
-            currentY += 10;
+
+            currentY += 10; // Additional space after the use case section
         }
+
 
         // ===== TASKS TABLE (WITH TYPE SAFETY) =====
         const tableData = tasks.map(task => [
