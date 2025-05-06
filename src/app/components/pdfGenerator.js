@@ -143,7 +143,6 @@ export const generatePdf = async () => {
             currentY += 10; // Additional space after the use case section
         }
 
-
         // ===== TASKS TABLE (WITH TYPE SAFETY) =====
         const tableData = tasks.map(task => [
             safeString(task?.title) || "-",
