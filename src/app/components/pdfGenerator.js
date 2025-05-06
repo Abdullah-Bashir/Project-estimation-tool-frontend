@@ -57,6 +57,8 @@ export const generatePdf = async () => {
             format: "a4"
         });
 
+        let currentY = 20; // Starting Y position
+
         // ===== HEADER SECTION =====
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, "F");
@@ -76,9 +78,8 @@ export const generatePdf = async () => {
         doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(0, 0, 0);
-        doc.text(safeString(title), 15, 52);
-
-        let currentY = 60;
+        doc.text(safeString(title), 15, currentY);
+        currentY += 10;
 
         // ===== SUMMARY SECTION =====
         if (summary) {
