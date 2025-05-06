@@ -85,7 +85,7 @@ export default function Reports() {
 
         if (totalHours <= 3 && departmentCount <= 2) {
             calculatedRockSize = "Small Rock";
-            calculatedUseCase = `Summary: asdasd Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+            calculatedUseCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
         }
         else if (totalHours <= 6 && departmentCount <= 6) {
             calculatedRockSize = "Medium Rock";
