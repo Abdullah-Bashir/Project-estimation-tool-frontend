@@ -66,11 +66,15 @@ export const generatePdf = async () => {
             doc.setFont(undefined, "normal");
             doc.setTextColor(80, 80, 80);
 
-            const result = addTextBlock(doc, summary, 15, nextY, 180);
-            nextY = result.newY;
+            const summaryLines = doc.splitTextToSize(summary, 180);
+            doc.text(summaryLines, 15, nextY);
+            nextY += summaryLines.length * 6 + 4;
         }
 
-        // Prediction info - FIXED
+        // Prediction info
+        doc.setFontSize(11);
+        doc.setFont(undefined, "normal");
+
         if (rockSize) {
             doc.setTextColor(0, 0, 0);
             doc.text("Predicted Size:", 15, nextY);
@@ -79,14 +83,25 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
-        // Use Case Block - FIXED
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             doc.setTextColor("#003399");
 
-            const result = addTextBlock(doc, useCase, 40, nextY, 150);
-            nextY = result.newY;
+            const [summaryPart, examplesPart] = useCase.split("Examples:");
+
+            if (summaryPart) {
+                const summaryText = summaryPart.replace("Summary:", "").trim();
+                const summaryLines = doc.splitTextToSize(summaryText, 150);
+                doc.text(summaryLines, 40, nextY);
+                nextY += summaryLines.length * 6 + 2;
+            }
+
+            if (examplesPart) {
+                const exampleLines = doc.splitTextToSize(`Examples: ${examplesPart.trim()}`, 150);
+                doc.text(exampleLines, 40, nextY);
+                nextY += exampleLines.length * 6 + 4;
+            }
         }
 
         // Table start
@@ -132,6 +147,6 @@ export const generatePdf = async () => {
 
     } catch (error) {
         console.error("PDF generation error:", error);
-        alert("Failed to generate PDF. Please try again!");
+        alert("Failed to generate PDF. Please try again.");
     }
 };
