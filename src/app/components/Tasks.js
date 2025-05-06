@@ -51,25 +51,39 @@ export default function Tasks() {
 
         let rockSize = "", useCase = "";
 
+        // Small Rock - Quick wins with minimal disruption
         if (totalHours <= 3 && departmentCount <= 2) {
             rockSize = "Small Rock";
-            useCase = `Summary: Quick wins with minimal disruption...`;
-        } else if (totalHours <= 6 && departmentCount <= 6) {
+            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.
+    Examples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+        }
+        // Medium Rock - Moderately complex projects
+        else if (totalHours <= 6 && departmentCount <= 6) {
             rockSize = "Medium Rock";
-            useCase = `Summary: Moderately complex projects...`;
-        } else if (totalHours <= 12 && departmentCount <= 6) {
+            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.
+    Examples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+        }
+        // Big Rock - Strategic, high-visibility efforts
+        else if (totalHours <= 12 && departmentCount <= 6) {
             rockSize = "Big Rock";
-            useCase = `Summary: Strategic, high-visibility efforts...`;
-        } else if (totalHours > 12 && departmentCount > 6) {
+            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.
+    Examples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
+        }
+        // Boulder - Enterprise-wide transformations
+        else if (totalHours > 12 && departmentCount > 6) {
             rockSize = "Boulder";
-            useCase = `Summary: Enterprise-wide transformations...`;
-        } else {
+            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.
+    Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
+        }
+        // Custom Rock - Projects that don't fit typical categories
+        else {
             rockSize = "Custom Rock";
             useCase = `This project does not fit typical categories. Review manually.`;
         }
 
         return { totalHours, totalResources, rockSize, useCase };
     };
+
 
     const updateLocalStorage = (updatedProject) => {
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));

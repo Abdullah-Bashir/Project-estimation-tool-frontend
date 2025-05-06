@@ -27,8 +27,11 @@ export default function Reports() {
 
     const { refetch } = useGetAllProjectsQuery();
 
+    console.log(useCase, "usecase")
+
 
     useEffect(() => {
+        console.log(currentProject?.reports)
         if (currentProject?.reports) {
 
             setCapability(currentProject.reports.capability || "");
