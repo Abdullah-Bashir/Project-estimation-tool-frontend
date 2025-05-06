@@ -88,9 +88,20 @@ export const generatePdf = async () => {
             doc.text("Use Case:", 15, nextY);
             doc.setTextColor("#003399");
 
-            // Directly display the entire useCase text without splitting
-            doc.text(useCase, 40, nextY); // Display the full content
-            nextY += 10; // Adjust the Y position after displaying the content
+            const fullUseCase = useCase.trim(); // Ensure no leading/trailing spaces
+
+            // Check if the content will fit within the page, else add new page
+            const pageHeight = doc.internal.pageSize.height;
+            const lineHeight = 6; // Approximate line height for regular text in jsPDF
+            const textHeight = fullUseCase.split("\n").length * lineHeight; // Estimate text height
+
+            if (nextY + textHeight > pageHeight - 20) { // If content doesn't fit on current page
+                doc.addPage(); // Add a new page
+                nextY = 10; // Reset Y position for new page
+            }
+
+            doc.text(fullUseCase, 40, nextY); // Directly display the entire useCase text
+            nextY += textHeight + 10; // Adjust next Y position after displaying text
         }
 
 
