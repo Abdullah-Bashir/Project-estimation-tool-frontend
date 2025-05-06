@@ -84,21 +84,34 @@ export const generatePdf = async () => {
         }
 
         if (useCase) {
-            doc.setFontSize(11);
-            doc.setFont(undefined, "normal");
-            doc.setTextColor(80, 80, 80);  // Set a similar color to summary for consistency
+            doc.setTextColor(0, 0, 0);
+            doc.text("Use Case:", 15, nextY);
+            doc.setTextColor("#003399");
 
-            // Use the same approach as Summary
-            const useCaseLines = doc.splitTextToSize(useCase, 180); // Split the text into lines that fit within the page
+            const [summaryPart, examplesPart] = useCase.split("Examples:");
 
-            doc.text("Use Case:", 15, nextY); // Display the "Use Case:" label
-            nextY += 10; // Move Y position down a little
+            if (summaryPart) {
+                const summaryText = summaryPart.replace("Summary:", "").trim();
+                const summaryLines = doc.splitTextToSize(summaryText, 150);
+                doc.text(summaryLines, 40, nextY);
+                nextY += summaryLines.length * 6 + 2;
+            }
 
-            doc.text(useCaseLines, 15, nextY); // Display the useCase text as lines
-            nextY += useCaseLines.length * 6 + 4; // Adjust Y position after displaying the content
+            if (examplesPart) {
+                const exampleText = examplesPart.trim();
+                const exampleLines = doc.splitTextToSize(`Examples: ${exampleText}`, 150);
+                doc.text(exampleLines, 40, nextY);
+                nextY += exampleLines.length * 6 + 4;
+            }
+
+            // If there's additional content beyond "Examples", just include it as-is
+            const additionalContent = useCase.split("Examples:")[1]?.trim();
+            if (additionalContent) {
+                const additionalContentLines = doc.splitTextToSize(additionalContent, 150);
+                doc.text(additionalContentLines, 40, nextY);
+                nextY += additionalContentLines.length * 6 + 4;
+            }
         }
-
-
 
         // Table start
         const tableStartY = nextY + 6;
