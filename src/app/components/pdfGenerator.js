@@ -88,21 +88,11 @@ export const generatePdf = async () => {
             doc.text("Use Case:", 15, nextY);
             doc.setTextColor("#003399");
 
-            const [summaryPart, examplesPart] = useCase.split("Examples:");
-
-            if (summaryPart) {
-                const summaryText = summaryPart.replace("Summary:", "").trim();
-                const summaryLines = doc.splitTextToSize(summaryText, 150);
-                doc.text(summaryLines, 40, nextY);
-                nextY += summaryLines.length * 6 + 2;
-            }
-
-            if (examplesPart) {
-                const exampleLines = doc.splitTextToSize(`Examples: ${examplesPart.trim()}`, 150);
-                doc.text(exampleLines, 40, nextY);
-                nextY += exampleLines.length * 6 + 4;
-            }
+            // Directly display the entire useCase text without splitting
+            doc.text(useCase, 40, nextY); // Display the full content
+            nextY += 10; // Adjust the Y position after displaying the content
         }
+
 
         // Table start
         const tableStartY = nextY + 6;
