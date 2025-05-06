@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-const API_URL = "http://localhost:6000/api/auth";
+// const API_URL = "http://localhost:6000/api/auth";
+const API_URL = "https://project-estimation-tool-backend-production.up.railway.app/api/auth";
 
 export const authApi = createApi({
     reducerPath: 'authApi',

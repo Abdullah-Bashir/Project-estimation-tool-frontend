@@ -92,14 +92,14 @@ export const generatePdf = async () => {
 
             if (summaryPart) {
                 const summaryText = summaryPart.replace("Summary:", "").trim();
-                const summaryLines = doc.splitTextToSize(summaryText, 150);
+                const summaryLines = doc.splitTextToSize(summaryText, 1500);
                 doc.text(summaryLines, 40, nextY);
                 nextY += summaryLines.length * 6 + 2;
             }
 
             if (examplesPart) {
                 const exampleText = examplesPart.trim();
-                const exampleLines = doc.splitTextToSize(`Examples: ${exampleText}`, 150);
+                const exampleLines = doc.splitTextToSize(`Examples: ${exampleText}`, 1500);
                 doc.text(exampleLines, 40, nextY);
                 nextY += exampleLines.length * 6 + 4;
             }
@@ -107,7 +107,7 @@ export const generatePdf = async () => {
             // If there's additional content beyond "Examples", just include it as-is
             const additionalContent = useCase.split("Examples:")[1]?.trim();
             if (additionalContent) {
-                const additionalContentLines = doc.splitTextToSize(additionalContent, 150);
+                const additionalContentLines = doc.splitTextToSize(additionalContent, 1500);
                 doc.text(additionalContentLines, 40, nextY);
                 nextY += additionalContentLines.length * 6 + 4;
             }
