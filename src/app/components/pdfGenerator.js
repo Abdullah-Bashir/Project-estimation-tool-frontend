@@ -66,15 +66,11 @@ export const generatePdf = async () => {
             doc.setFont(undefined, "normal");
             doc.setTextColor(80, 80, 80);
 
-            const summaryLines = doc.splitTextToSize(summary, 180);
-            doc.text(summaryLines, 15, nextY);
-            nextY += summaryLines.length * 6 + 4;
+            const result = addTextBlock(doc, summary, 15, nextY, 180);
+            nextY = result.newY;
         }
 
-        // Prediction info
-        doc.setFontSize(11);
-        doc.setFont(undefined, "normal");
-
+        // Prediction info - FIXED
         if (rockSize) {
             doc.setTextColor(0, 0, 0);
             doc.text("Predicted Size:", 15, nextY);
@@ -83,17 +79,15 @@ export const generatePdf = async () => {
             nextY += 10;
         }
 
+        // Use Case Block - FIXED
         if (useCase) {
             doc.setTextColor(0, 0, 0);
             doc.text("Use Case:", 15, nextY);
             doc.setTextColor("#003399");
 
-            // Process entire useCase without splitting
-            const useCaseLines = doc.splitTextToSize(useCase, 150);
-            doc.text(useCaseLines, 40, nextY);
-            nextY += useCaseLines.length * 6 + 4;
+            const result = addTextBlock(doc, useCase, 40, nextY, 150);
+            nextY = result.newY;
         }
-
 
         // Table start
         const tableStartY = nextY + 6;
