@@ -89,7 +89,7 @@ export default function Reports() {
         }
         else if (totalHours <= 6 && departmentCount <= 6) {
             calculatedRockSize = "Medium Rock";
-            calculatedUseCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+            calculatedUseCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.`;
         }
         else if (totalHours <= 12 && departmentCount <= 6) {
             calculatedRockSize = "Big Rock";
