@@ -84,25 +84,20 @@ export const generatePdf = async () => {
         }
 
         if (useCase) {
-            doc.setTextColor(0, 0, 0);
-            doc.text("Use Case:", 15, nextY);
-            doc.setTextColor("#003399");
+            doc.setFontSize(11);
+            doc.setFont(undefined, "normal");
+            doc.setTextColor(80, 80, 80);  // Set a similar color to summary for consistency
 
-            const fullUseCase = useCase.trim(); // Ensure no leading/trailing spaces
+            // Use the same approach as Summary
+            const useCaseLines = doc.splitTextToSize(useCase, 180); // Split the text into lines that fit within the page
 
-            // Check if the content will fit within the page, else add new page
-            const pageHeight = doc.internal.pageSize.height;
-            const lineHeight = 6; // Approximate line height for regular text in jsPDF
-            const textHeight = fullUseCase.split("\n").length * lineHeight; // Estimate text height
+            doc.text("Use Case:", 15, nextY); // Display the "Use Case:" label
+            nextY += 10; // Move Y position down a little
 
-            if (nextY + textHeight > pageHeight - 20) { // If content doesn't fit on current page
-                doc.addPage(); // Add a new page
-                nextY = 10; // Reset Y position for new page
-            }
-
-            doc.text(fullUseCase, 40, nextY); // Directly display the entire useCase text
-            nextY += textHeight + 10; // Adjust next Y position after displaying text
+            doc.text(useCaseLines, 15, nextY); // Display the useCase text as lines
+            nextY += useCaseLines.length * 6 + 4; // Adjust Y position after displaying the content
         }
+
 
 
         // Table start
