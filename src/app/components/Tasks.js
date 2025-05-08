@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import LordIconScript from "../components/lordiconScript";
 import EditTaskModal from "../popups/editTaskModal";
+import { toast } from "react-toastify";
+import { useCreateOrUpdateProjectMutation } from "../redux/api/projectDetailApi";
 
 export default function Tasks() {
     const initialProject = JSON.parse(localStorage.getItem("currentProject"));
@@ -20,6 +22,8 @@ export default function Tasks() {
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [taskBeingEdited, setTaskBeingEdited] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [createOrUpdateProject] = useCreateOrUpdateProjectMutation();
 
     const departmentOptions = [
         "Claims", "Finance / Underwriting", "Healthcare Delivery", "Hospitality Rx", "HRT", "Human Resources",
@@ -44,46 +48,32 @@ export default function Tasks() {
     }, []);
 
     const calculateRockDetails = (taskList) => {
-        const totalHours = taskList.reduce((sum, task) => sum + Number(task.hours || 0), 0);
+        const maxHours = Math.max(...taskList.map(task => Number(task.hours || 0)), 0);
         const totalResources = taskList.reduce((sum, task) => sum + Number(task.resources || 0), 0);
         const departments = [...new Set(taskList.map(task => task.department))];
         const departmentCount = departments.length;
 
         let rockSize = "", useCase = "";
 
-        // Small Rock - Quick wins with minimal disruption
-        if (totalHours <= 3 && departmentCount <= 2) {
+        if (maxHours <= 3 && departmentCount <= 2) {
             rockSize = "Small Rock";
-            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.
-    Examples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
-        }
-        // Medium Rock - Moderately complex projects
-        else if (totalHours <= 6 && departmentCount <= 6) {
+            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+        } else if (maxHours <= 6 && departmentCount <= 6) {
             rockSize = "Medium Rock";
-            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.
-    Examples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
-        }
-        // Big Rock - Strategic, high-visibility efforts
-        else if (totalHours <= 12 && departmentCount <= 6) {
+            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+        } else if (maxHours <= 12 && departmentCount <= 6) {
             rockSize = "Big Rock";
-            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.
-    Examples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
-        }
-        // Boulder - Enterprise-wide transformations
-        else if (totalHours > 12 && departmentCount > 6) {
+            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.\nExamples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
+        } else if (maxHours > 12 && departmentCount > 6) {
             rockSize = "Boulder";
-            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.
-    Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
-        }
-        // Custom Rock - Projects that don't fit typical categories
-        else {
+            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.\nExamples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
+        } else {
             rockSize = "Custom Rock";
             useCase = `This project does not fit typical categories. Review manually.`;
         }
 
-        return { totalHours, totalResources, rockSize, useCase };
+        return { totalHours: maxHours, totalResources, rockSize, useCase };
     };
-
 
     const updateLocalStorage = (updatedProject) => {
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
@@ -190,6 +180,59 @@ export default function Tasks() {
         }
     };
 
+    const handleSaveProject = async () => {
+        setIsLoading(true);
+
+        const formattedTasks = tasks.map((task) => ({
+            title: task.title || "",
+            department: task.department || "-",
+            hours: task.hours || 0,
+            resources: task.resources || 0,
+            comment: task.comment || "-",
+        }));
+
+        const { totalHours, totalResources, rockSize, useCase } = calculateRockDetails(tasks);
+
+        const projectData = {
+            _id: currentProject?._id,
+            title: currentProject?.title,
+            reports: {
+                ...currentProject?.reports,
+                totalHours,
+                totalResources,
+                rockSize,
+                useCase,
+                tasks: formattedTasks,
+            },
+        };
+
+        try {
+            const response = await createOrUpdateProject(projectData).unwrap();
+
+            const updatedProject = {
+                ...response.data,
+                title: currentProject?.title,
+                reports: {
+                    ...response.data.reports,
+                    tasks: formattedTasks,
+                    totalHours,
+                    totalResources,
+                    rockSize,
+                    useCase,
+                },
+            };
+
+            localStorage.setItem("currentProject", JSON.stringify(updatedProject));
+            toast.success("Project saved successfully!");
+            setCurrentProject(updatedProject);
+        } catch (error) {
+            console.error("Error saving project:", error);
+            toast.error("Failed to save project.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     if (!currentProject) {
         return (
             <div className="h-screen flex justify-center items-center text-gray-500 dark:text-gray-300 text-lg">
@@ -198,18 +241,39 @@ export default function Tasks() {
         );
     }
 
-
     return (
         <div className={`min-h-screen w-full p-6 ${isEditOpen ? "backdrop-blur-sm" : ""} transition-all duration-300`}>
             <LordIconScript />
 
             {/* Add Task Form */}
             <div className="mx-auto mb-6 md:mb-8">
-
                 <div className="rounded-xl md:rounded-2xl shadow-lg md:shadow-xl p-4 md:p-6 hover:shadow-xl md:hover:shadow-2xl transition-all bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 md:mb-6">Add New Task</h2>
-
+                    <div className="flex justify-between items-center mb-4 md:mb-6">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Add New Task</h2>
+                        <button
+                            onClick={handleSaveProject}
+                            disabled={isLoading}
+                            className={`flex items-center gap-2 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#003399] hover:bg-indigo-700'
+                                } text-white px-4 py-2 rounded-xl font-medium transition-all hover:scale-[1.02] active:scale-95 shadow-md hover:shadow-lg`}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                    Save Project
+                                </>
+                            )}
+                        </button>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="text-left">
@@ -354,7 +418,6 @@ export default function Tasks() {
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
             </div>
@@ -362,11 +425,10 @@ export default function Tasks() {
             {isEditOpen && (
                 <EditTaskModal task={taskBeingEdited} onClose={() => setIsEditOpen(false)} onSave={saveEditedTask} />
             )}
-
         </div>
     );
-}
 
+}
 
 
 

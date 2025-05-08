@@ -30,9 +30,11 @@ export default function Dashboard() {
 
     tasks.forEach((task) => {
         if (task.department) {
-            departmentHours[task.department] = (departmentHours[task.department] || 0) + Number(task.hours || 0);
+            const hours = Number(task.hours || 0);
+            departmentHours[task.department] = Math.max(departmentHours[task.department] || 0, hours);
         }
     });
+
 
     const chartLabels = Object.keys(departmentHours);
     const chartData = Object.values(departmentHours);
@@ -169,6 +171,8 @@ export default function Dashboard() {
         </div>
     );
 }
+
+
 
 function SummaryCard({ title, value }) {
     return (

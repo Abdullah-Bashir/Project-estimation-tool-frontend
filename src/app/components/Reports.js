@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { FaFilePdf, FaFileExcel } from "react-icons/fa";
-import { FiAlertCircle, FiChevronDown, FiX } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
 import { generateExcel } from "../components/excelGenerator";
 import { toast } from "react-toastify";
 import { useCreateOrUpdateProjectMutation, useGetAllProjectsQuery } from "../redux/api/projectDetailApi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiChevronDown, FiX, FiAlertCircle } from "react-icons/fi";
 
 export default function Reports() {
     const [rockSize, setRockSize] = useState("");
@@ -17,34 +17,23 @@ export default function Reports() {
     const [capability, setCapability] = useState("");
     const [pillar, setPillar] = useState("");
     const [methodology, setMethodology] = useState("");
-    const [email, setEmail] = useState("");
     const [isRockSizeCalculated, setIsRockSizeCalculated] = useState(false);
 
     const currentProject = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("currentProject")) : null;
     const tasks = currentProject?.reports?.tasks || [];
 
     const [createOrUpdateProject, { isLoading }] = useCreateOrUpdateProjectMutation();
-
     const { refetch } = useGetAllProjectsQuery();
 
-    console.log(useCase, "usecase")
-
-
     useEffect(() => {
-        console.log(currentProject?.reports)
         if (currentProject?.reports) {
-
             setCapability(currentProject.reports.capability || "");
             setPillar(currentProject.reports.pillar || "");
             setMethodology(currentProject.reports.methodology || "");
-            setEmail(currentProject.reports.email || "");
-
-            // 👇 ADD THIS
             setRockSize(currentProject.reports.rockSize || "");
             setUseCase(currentProject.reports.useCase || "");
         }
     }, [currentProject]);
-
 
     const handleCapabilityChange = (value) => {
         setCapability(value);
@@ -61,17 +50,12 @@ export default function Reports() {
         updateLocalStorage("methodology", value);
         setIsRockSizeCalculated(false);
     };
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-        updateLocalStorage("email", e.target.value);
-        setIsRockSizeCalculated(false);
-    };
+
     const calculateRockSize = () => {
         const missing = [];
         if (!capability) missing.push("Capability");
         if (!pillar) missing.push("Pillar");
         if (!methodology) missing.push("Methodology");
-        if (!email) missing.push("Email");
 
         if (missing.length > 0) {
             setMissingFields(missing);
@@ -79,59 +63,54 @@ export default function Reports() {
             return;
         }
 
-        const totalHours = tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0);
-        const departments = [...new Set(tasks.map(task => task.department))]; // unique departments
+        const maxHours = Math.max(...tasks.map(task => Number(task.hours || 0)), 0);
+        const departments = [...new Set(tasks.map(task => task.department))];
         const departmentCount = departments.length;
 
         let calculatedRockSize = "";
         let calculatedUseCase = "";
 
-        if (totalHours <= 3 && departmentCount <= 2) {
+        if (maxHours <= 3 && departmentCount <= 2) {
             calculatedRockSize = "Small Rock";
             calculatedUseCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
-        }
-        else if (totalHours <= 6 && departmentCount <= 6) {
+        } else if (maxHours <= 6 && departmentCount <= 6) {
             calculatedRockSize = "Medium Rock";
             calculatedUseCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
-        }
-        else if (totalHours <= 12 && departmentCount <= 6) {
+        } else if (maxHours <= 12 && departmentCount <= 6) {
             calculatedRockSize = "Big Rock";
             calculatedUseCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.\nExamples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
-        }
-        else if (totalHours > 12 && departmentCount > 6) {
+        } else if (maxHours > 12 && departmentCount > 6) {
             calculatedRockSize = "Boulder";
             calculatedUseCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.\nExamples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
-        }
-        else {
+        } else {
             calculatedRockSize = "Custom Rock";
             calculatedUseCase = `This project does not fit typical categories. Review manually.`;
         }
 
-        // 🔥 Update localStorage immediately
         const updatedProject = {
             ...currentProject,
             reports: {
                 ...currentProject.reports,
                 rockSize: calculatedRockSize,
                 useCase: calculatedUseCase,
-                totalHours,
+                totalHours: maxHours,
                 totalResources: tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0),
             },
         };
 
-        localStorage.setItem("currentProject", JSON.stringify(updatedProject)); // ✅
+        localStorage.setItem("currentProject", JSON.stringify(updatedProject));
 
-        // 🔥 Update UI immediately too
         setRockSize(calculatedRockSize);
         setUseCase(calculatedUseCase);
-
         setIsModalOpen(true);
         setIsRockSizeCalculated(true);
     };
+
     const updateLocalStorage = (key, value) => {
         const updatedProject = { ...currentProject, reports: { ...currentProject.reports, [key]: value } };
         localStorage.setItem("currentProject", JSON.stringify(updatedProject));
     };
+
     const handleSave = async () => {
         const formattedTasks = tasks.map((task) => ({
             title: task.title || "",
@@ -148,16 +127,14 @@ export default function Reports() {
                 capability,
                 pillar,
                 methodology,
-                email: email?.trim() || "N/A", // ← fix here
                 rockSize,
                 useCase,
                 summary: currentProject?.reports?.summary || "-",
-                totalHours: tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0),
+                totalHours: Math.max(...tasks.map(task => Number(task.hours || 0)), 0),
                 totalResources: tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0),
                 tasks: formattedTasks,
             },
         };
-
 
         try {
             const response = await createOrUpdateProject(projectData).unwrap();
@@ -181,7 +158,6 @@ export default function Reports() {
         }
     };
 
-
     if (!currentProject) {
         return (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400">
@@ -196,12 +172,8 @@ export default function Reports() {
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-10 gap-4">
-
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Reports</h1>
-
                     <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
-
-                        {/* Export PDF */}
                         <button
                             className="flex items-center gap-2 bg-[#003399] hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
                             onClick={async () => {
@@ -211,8 +183,6 @@ export default function Reports() {
                         >
                             <FaFilePdf className="text-lg" /> Export PDF
                         </button>
-
-                        {/* Export Excel */}
                         <button
                             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base"
                             onClick={() => {
@@ -221,8 +191,6 @@ export default function Reports() {
                         >
                             <FaFileExcel className="text-lg" /> Export Excel
                         </button>
-
-                        {/* Save Project */}
                         <button
                             className={`flex items-center gap-2 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} text-white px-3 sm:px-4 py-2 rounded-md font-medium text-sm sm:text-base`}
                             onClick={handleSave}
@@ -230,17 +198,14 @@ export default function Reports() {
                         >
                             {isLoading ? 'Saving...' : 'Save Project'}
                         </button>
-
                     </div>
-
-
                 </div>
 
                 {/* Executive Summary */}
                 <div className="mb-8 sm:mb-12">
                     <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Executive Summary</h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <SummaryCard label="Total Duration (Months)" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
+                        <SummaryCard label="Total Duration (Months)" value={Math.max(...tasks.map(task => Number(task.hours || 0)), 0)} />
                         <SummaryCard label="Total Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
                     </div>
                 </div>
@@ -252,19 +217,6 @@ export default function Reports() {
                     <EnhancedDropdownField label="Select Methodology *" value={methodology} onChange={handleMethodologyChange} options={["Predictive", "Agile", "Hybrid"]} />
                 </div>
 
-                {/* Email Field */}
-                <div className="mb-8">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter Email Address *</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={handleEmailChange}
-                        placeholder="Enter your email"
-                        className="w-full px-4 py-3 rounded-md border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 outline-none focus:ring-4 focus:ring-indigo-100/50 focus:border-indigo-500 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm hover:shadow-md"
-                    />
-                </div>
-
-                {/* Calculate Button */}
                 <div className="text-center mb-5">
                     <motion.button
                         className="cursor-pointer px-6 py-3 rounded-md font-bold text-white text-sm sm:text-base bg-[#003399] hover:bg-indigo-700"
@@ -419,8 +371,9 @@ function ValidationModal({ isOpen, onClose, missingFields }) {
 function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }) {
     if (!useCase) return null;
 
-    // Split useCase into Summary and Examples
     const [summaryPart, examplesPart] = useCase.split("Examples:");
+    const maxDuration = Math.max(...tasks.map(task => Number(task.hours || 0)), 0);
+    const totalResources = tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0);
 
     return (
         <AnimatePresence>
@@ -440,7 +393,6 @@ function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }
                         transition={{ type: "spring", damping: 20, stiffness: 300 }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Header */}
                         <div className="bg-[#003399] px-4 py-2 rounded-t-lg flex justify-between items-center">
                             <h2 className="text-lg font-bold text-white">Rock Size Details</h2>
                             <motion.button
@@ -453,20 +405,13 @@ function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }
                             </motion.button>
                         </div>
 
-                        {/* Body */}
                         <div className="p-4 space-y-3">
-                            {/* Predicted Size */}
                             <FieldRow label="Predicted Size" value={rockSize} />
-                            {/* Summary */}
                             {summaryPart && <FieldRow label="Summary" value={summaryPart.replace("Summary:", "").trim()} />}
-                            {/* Examples */}
                             {examplesPart && <FieldRow label="Examples" value={examplesPart.trim()} italic />}
-                            {/* Resources */}
-                            <FieldRow label="Resources" value={tasks.reduce((sum, task) => sum + Number(task.resources || 0), 0)} />
-                            {/* Hours */}
-                            <FieldRow label="Duration (Months)" value={tasks.reduce((sum, task) => sum + Number(task.hours || 0), 0)} />
+                            <FieldRow label="Resources" value={totalResources} />
+                            <FieldRow label="Duration (Months)" value={maxDuration} />
 
-                            {/* Close button */}
                             <div className="flex justify-end">
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
@@ -484,7 +429,6 @@ function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }
         </AnimatePresence>
     );
 }
-
 
 
 // Helper compact field
