@@ -48,6 +48,15 @@ export default function Tasks() {
     }, []);
 
     const calculateRockDetails = (taskList) => {
+        if (!taskList || taskList.length === 0) {
+            return {
+                totalHours: 0,
+                totalResources: 0,
+                rockSize: "No Rock",
+                useCase: "No tasks defined for this project.",
+            };
+        }
+
         const maxHours = Math.max(...taskList.map(task => Number(task.hours || 0)), 0);
         const totalResources = taskList.reduce((sum, task) => sum + Number(task.resources || 0), 0);
         const departments = [...new Set(taskList.map(task => task.department))];
@@ -57,16 +66,20 @@ export default function Tasks() {
 
         if (maxHours <= 3 && departmentCount <= 2) {
             rockSize = "Small Rock";
-            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.
+Examples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
         } else if (maxHours <= 6 && departmentCount <= 6) {
             rockSize = "Medium Rock";
-            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.
+Examples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
         } else if (maxHours <= 12 && departmentCount <= 6) {
             rockSize = "Big Rock";
-            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.\nExamples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
+            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.
+Examples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
         } else if (maxHours > 12 && departmentCount > 6) {
             rockSize = "Boulder";
-            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.\nExamples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
+            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.
+Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
         } else {
             rockSize = "Custom Rock";
             useCase = `This project does not fit typical categories. Review manually.`;
@@ -343,7 +356,7 @@ export default function Tasks() {
                         <table className="w-full min-w-[650px]">
                             <thead className="dark:bg-gray-700 bg-[#003399] text-white">
                                 <tr className="text-left dark:text-gray-300 text-xs sm:text-sm uppercase font-semibold">
-                                    <th className="px-4 sm:px-6 py-3 md:py-4 rounded-tl-xl">Project Name</th>
+                                    <th className="px-4 sm:px-6 py-3 md:py-4 rounded-tl-xl">Project Tasks</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4">Department</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4">Duration</th>
                                     <th className="px-4 sm:px-6 py-3 md:py-4">Resources</th>
