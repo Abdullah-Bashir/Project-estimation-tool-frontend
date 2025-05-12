@@ -40,11 +40,13 @@ export default function Reports() {
         updateLocalStorage("capability", value);
         setIsRockSizeCalculated(false);
     };
+
     const handlePillarChange = (value) => {
         setPillar(value);
         updateLocalStorage("pillar", value);
         setIsRockSizeCalculated(false);
     };
+
     const handleMethodologyChange = (value) => {
         setMethodology(value);
         updateLocalStorage("methodology", value);

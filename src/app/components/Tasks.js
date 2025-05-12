@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import LordIconScript from "../components/lordiconScript";
 import EditTaskModal from "../popups/editTaskModal";
 import { toast } from "react-toastify";
-import { useCreateOrUpdateProjectMutation } from "../redux/api/projectDetailApi";
+import { useCreateOrUpdateProjectMutation, useGetAllProjectsQuery } from "../redux/api/projectDetailApi";
+
 
 export default function Tasks() {
     const initialProject = JSON.parse(localStorage.getItem("currentProject"));
@@ -23,6 +24,8 @@ export default function Tasks() {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [taskBeingEdited, setTaskBeingEdited] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    const { refetch } = useGetAllProjectsQuery();
     const [createOrUpdateProject] = useCreateOrUpdateProjectMutation();
 
     const departmentOptions = [
@@ -193,11 +196,18 @@ Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation i
         }
     };
 
+
     const handleSaveProject = async () => {
         setIsLoading(true);
 
+        // Get the current project from localStorage (if any)
+        const localProject = JSON.parse(localStorage.getItem("currentProject"));
+
+        // If there's no project in localStorage, use default values
+        const projectTitle = localProject?.title || "New project";
+
         const formattedTasks = tasks.map((task) => ({
-            title: task.title || "",
+            title: task.title || "New task", // Make sure task titles are set correctly
             department: task.department || "-",
             hours: task.hours || 0,
             resources: task.resources || 0,
@@ -206,11 +216,12 @@ Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation i
 
         const { totalHours, totalResources, rockSize, useCase } = calculateRockDetails(tasks);
 
+        // Prepare project data, including the title from localStorage
         const projectData = {
-            _id: currentProject?._id,
-            title: currentProject?.title,
+            _id: localProject?._id,
+            title: projectTitle, // Ensure project title from localStorage is used
             reports: {
-                ...currentProject?.reports,
+                ...localProject?.reports,
                 totalHours,
                 totalResources,
                 rockSize,
@@ -220,11 +231,12 @@ Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation i
         };
 
         try {
+            // Save the project to the database (and get the response back)
             const response = await createOrUpdateProject(projectData).unwrap();
 
             const updatedProject = {
                 ...response.data,
-                title: currentProject?.title,
+                title: projectTitle, // Make sure updated title is set here
                 reports: {
                     ...response.data.reports,
                     tasks: formattedTasks,
@@ -235,9 +247,14 @@ Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation i
                 },
             };
 
+            // Update the localStorage with the updated project
             localStorage.setItem("currentProject", JSON.stringify(updatedProject));
+
+            // Notify the user and update the state
             toast.success("Project saved successfully!");
+            await refetch();
             setCurrentProject(updatedProject);
+
         } catch (error) {
             console.error("Error saving project:", error);
             toast.error("Failed to save project.");
