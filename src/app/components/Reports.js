@@ -72,16 +72,16 @@ export default function Reports() {
         let calculatedRockSize = "";
         let calculatedUseCase = "";
 
-        if (maxHours <= 3 && departmentCount <= 2) {
+        if (maxHours <= 3) {
             calculatedRockSize = "Small Rock";
             calculatedUseCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
-        } else if (maxHours <= 6 && departmentCount <= 6) {
+        } else if (maxHours <= 7) {
             calculatedRockSize = "Medium Rock";
             calculatedUseCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
-        } else if (maxHours <= 12 && departmentCount <= 6) {
+        } else if (maxHours <= 11) {
             calculatedRockSize = "Big Rock";
             calculatedUseCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.\nExamples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
-        } else if (maxHours > 12 && departmentCount > 6) {
+        } else if (maxHours >= 12) {
             calculatedRockSize = "Boulder";
             calculatedUseCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.\nExamples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
         } else {
