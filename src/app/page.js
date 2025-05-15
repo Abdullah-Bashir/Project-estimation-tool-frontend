@@ -206,9 +206,10 @@ export default function Home() {
 
           <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="flex items-center gap-3 relative" ref={dropdownRef}>
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
-              <img src="/logo.png" alt="Logo" className="h-10 w-10" />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 relative mt-2" ref={dropdownRef}>
+
+            <div className="flex items-center  gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
+              <img src="/logo.png" alt="Logo" className="md:h-10 md:w-50 h-8 w-30" />
               <FiChevronDown className="text-xl" />
             </div>
 

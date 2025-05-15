@@ -45,8 +45,10 @@ export const generatePdf = async () => {
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, "F");
 
+
         // Centered Logo
-        doc.addImage(logo, "PNG", 92.5, 5, 25, 25);
+        doc.addImage(logo, "PNG", 55, 5, 100, 25);
+
 
         // PM Network text under logo
         doc.setTextColor(255, 255, 255);

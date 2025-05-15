@@ -109,11 +109,7 @@ export default function MobileNavigation({ activeTab, setActiveTab }) {
                         }}
                     >
                         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <img
-                                src="/logo.png"
-                                alt="App Logo"
-                                style={{ height: "28px", width: "auto" }}
-                            />
+
                             <h2 style={{
                                 fontWeight: 600,
                                 fontSize: "15px",
