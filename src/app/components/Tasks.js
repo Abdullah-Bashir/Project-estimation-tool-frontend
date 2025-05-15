@@ -69,24 +69,21 @@ export default function Tasks() {
 
         if (maxHours <= 3) {
             rockSize = "Small Rock";
-            useCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.
-Examples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+            useCase = `< 400hrs | 1 - 2 departments involved. Ex: small application enhancements, changes to plus or changes to look and feel`;
         } else if (maxHours <= 7) {
             rockSize = "Medium Rock";
-            useCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.
-Examples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+            useCase = `400 - 1500hrs | 3 - 6 departments involved. Ex: New Plan builds(Move FSP, PPO to BCBS), changing vendors, C&E automation projects.`;
         } else if (maxHours <= 11) {
             rockSize = "Big Rock";
-            useCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.
-Examples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
+            useCase = `1500 - 5000hrs | 3 - 6 Departments involved. Ex: Plan Changes or benefit changes(midwest casino benefit change), IT systems upgrades(Windows 10 ,Server upgrades)`;
         } else if (maxHours >= 12) {
             rockSize = "Boulder";
-            useCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.
-Examples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
+            useCase = `> 5000hrs or highly complex | > 6 Departments involved. Ex: Alaska Merger, EDW, Transparency Project`;
         } else {
             rockSize = "Custom Rock";
             useCase = `This project does not fit typical categories. Review manually.`;
         }
+
 
         return { totalHours: maxHours, totalResources, rockSize, useCase };
     };

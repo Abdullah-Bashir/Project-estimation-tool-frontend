@@ -15,7 +15,7 @@ export const generatePdf = async () => {
 
         const {
             title: projectName = "Untitled Project",
-            reports
+            reports,
         } = currentProject;
 
         const {
@@ -28,7 +28,7 @@ export const generatePdf = async () => {
             email,
             totalHours,
             totalResources,
-            summary
+            summary,
         } = reports;
 
         if (!tasks.length) {
@@ -37,7 +37,9 @@ export const generatePdf = async () => {
         }
 
         const doc = new jsPDF();
-        const logo = await getBase64ImageFromUrl(`${window.location.origin}/logo.png`);
+        const logo = await getBase64ImageFromUrl(
+            `${window.location.origin}/logo.png`
+        );
 
         // Top black header bar
         doc.setFillColor(0, 0, 0);
@@ -88,40 +90,36 @@ export const generatePdf = async () => {
             doc.text("Use Case:", 15, nextY);
             doc.setTextColor("#003399");
 
-            const [summaryPart, examplesPart] = useCase.split("Examples:");
+            const exIndex = useCase.indexOf("Ex:");
+            if (exIndex !== -1) {
+                // Text before "Ex:"
+                const beforeEx = useCase.substring(0, exIndex).trim();
+                const beforeExLines = doc.splitTextToSize(beforeEx, 150);
+                doc.text(beforeExLines, 40, nextY);
+                nextY += beforeExLines.length * 6 + 2;
 
-            if (summaryPart) {
-                const summaryText = summaryPart.replace("Summary:", "").trim();
-                const summaryLines = doc.splitTextToSize(summaryText, 150);
-                doc.text(summaryLines, 40, nextY);
-                nextY += summaryLines.length * 6 + 2;
-            }
-
-            if (examplesPart) {
-                const exampleText = examplesPart.trim();
-                const exampleLines = doc.splitTextToSize(`Examples: ${exampleText}`, 150);
-                doc.text(exampleLines, 40, nextY);
-                nextY += exampleLines.length * 6 + 4;
-            }
-
-            // If there's additional content beyond "Examples", just include it as-is
-            const additionalContent = useCase.split("Examples:")[1]?.trim();
-            if (additionalContent) {
-                const additionalContentLines = doc.splitTextToSize(additionalContent, 1500);
-                doc.text(additionalContentLines, 40, nextY);
-                nextY += additionalContentLines.length * 6 + 4;
+                // Text from "Ex:" onwards on next line, same indent as beforeEx
+                const exText = useCase.substring(exIndex).trim();
+                const exLines = doc.splitTextToSize(exText, 150);
+                doc.text(exLines, 40, nextY);
+                nextY += exLines.length * 6 + 4;
+            } else {
+                // If no "Ex:" just print whole useCase normally
+                const allLines = doc.splitTextToSize(useCase, 150);
+                doc.text(allLines, 40, nextY);
+                nextY += allLines.length * 6 + 4;
             }
         }
 
         // Table start
         const tableStartY = nextY + 6;
 
-        const tableData = tasks.map(task => [
+        const tableData = tasks.map((task) => [
             task.title || "-",
             task.department || "-",
             task.hours || "-",
             task.resources || "-",
-            task.comment || "-"
+            task.comment || "-",
         ]);
 
         autoTable(doc, {
@@ -131,7 +129,7 @@ export const generatePdf = async () => {
             styles: { fontSize: 9 },
             headStyles: { fillColor: [0, 51, 153], textColor: 255 },
             alternateRowStyles: { fillColor: [245, 247, 255] },
-            margin: { left: 15, right: 15 }
+            margin: { left: 15, right: 15 },
         });
 
         // Totals
@@ -153,11 +151,8 @@ export const generatePdf = async () => {
 
         // Save
         doc.save("project-estimation-report.pdf");
-
     } catch (error) {
         console.error("PDF generation error:", error);
         alert("Failed to generate PDF. Please try again.");
     }
 };
-
-

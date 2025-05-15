@@ -74,16 +74,16 @@ export default function Reports() {
 
         if (maxHours <= 3) {
             calculatedRockSize = "Small Rock";
-            calculatedUseCase = `Summary: Quick wins with minimal disruption, focused on forms, small app tweaks, or light automations. Ideal for pilots, vendor export updates, UI enhancements, or launching early-stage initiatives like DEI.\nExamples: New forms, Pulse app changes, export updates, workflow automations, DEI start.`;
+            calculatedUseCase = `< 400hrs | 1 - 2 departments involved. Ex: small application enhancements, chnages to plus or changes to look and feel`;
         } else if (maxHours <= 7) {
             calculatedRockSize = "Medium Rock";
-            calculatedUseCase = `Summary: Moderately complex projects improving systems or processes across several teams. These often involve integrations, data cleanup, or upgrading internal tools.\nExamples: System integrations, data migration, Member Portal updates, new reporting, Windows 10 upgrade.`;
+            calculatedUseCase = `400 - 1500hrs | 3 - 6 departments involved. Ex: New Plan builds(Move FSP, PPO to BCBS), changing vendors, C&E automation projects.`;
         } else if (maxHours <= 11) {
             calculatedRockSize = "Big Rock";
-            calculatedUseCase = `Summary: Strategic, high-visibility efforts involving cross-functional coordination. Focused on larger benefit or system changes, vendor transitions, and plan network updates.\nExamples: Plan changes, vendor swaps, platform replacements, compliance implementations.`;
+            calculatedUseCase = `1500 - 5000hrs | 3 - 6 Departments involved. Ex: Plan Changes or benefit changes(midwest casino benefit change), IT systems upgrades(Windows 10 ,Server upgrades)`;
         } else if (maxHours >= 12) {
             calculatedRockSize = "Boulder";
-            calculatedUseCase = `Summary: Enterprise-wide transformations with lasting impact. These are high-investment, long-term projects modernizing core infrastructure and business models.\nExamples: Alaska Merger, EDW launch, Transparency Project, org-wide automation initiatives.`;
+            calculatedUseCase = `> 5000hrs or highly complex | > 6 Departments involved. Ex: Alaska Merger, EDW, Transparency Project`;
         } else {
             calculatedRockSize = "Custom Rock";
             calculatedUseCase = `This project does not fit typical categories. Review manually.`;
@@ -216,7 +216,7 @@ export default function Reports() {
                 <div className="mb-8 sm:mb-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                     <EnhancedDropdownField label="Select Capability *" value={capability} onChange={handleCapabilityChange} options={["Build (New capabilities)", "Maintain (Keep lights on)", "Retire (Eliminate capabilities)"]} />
                     <EnhancedDropdownField label="Select Pillar *" value={pillar} onChange={handlePillarChange} options={["Innovation", "Navigation of Healthcare Reform", "Organizational & Staff", "Participant Engagement", "Strategic Growth"]} />
-                    <EnhancedDropdownField label="Select Methodology *" value={methodology} onChange={handleMethodologyChange} options={["Predictive", "Agile", "Hybrid"]} />
+                    <EnhancedDropdownField label="Executive Sponsor *" value={methodology} onChange={handleMethodologyChange} options={["Bulmahn, Wayne", "Sheridan, Sabrina", "Riley, Angela", "Krajcinovic, Ivana", "VandeVusse, Joel", "Patel, Dharma"]} />
                 </div>
 
                 <div className="text-center mb-5">

@@ -19,7 +19,7 @@ const createEmptyProject = () => ({
   reports: {
     email: "",
     capability: "Maintain (Keep lights on)",
-    methodology: "Agile",
+    methodology: "Bulmahn, Wayne",
     pillar: "Organizational & Staff",
     rockSize: "",
     useCase: "",
