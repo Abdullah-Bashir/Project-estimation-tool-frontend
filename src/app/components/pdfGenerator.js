@@ -41,19 +41,17 @@ export const generatePdf = async () => {
             `${window.location.origin}/logo.png`
         );
 
-        // Top black header bar
-        doc.setFillColor(0, 0, 0);
-        doc.rect(0, 0, 210, 40, "F");
+        // Removed black header bar
+        // doc.setFillColor(0, 0, 0);
+        // doc.rect(0, 0, 210, 40, "F");
 
-
-        // Centered Logo
-        doc.addImage(logo, "PNG", 55, 5, 100, 25);
-
+        // Centered Logo - moved slightly down for white background
+        doc.addImage(logo, "PNG", 55, 10, 100, 25);
 
         // PM Network text under logo
-        doc.setTextColor(255, 255, 255);
+        doc.setTextColor(0, 0, 0); // changed from white to black for visibility on white
         doc.setFontSize(11);
-        doc.text("PM NETWORK ALLIANCE", 105, 35, { align: "center" });
+        doc.text("PM NETWORK ALLIANCE", 105, 40, { align: "center" });
 
         // Project name
         doc.setFontSize(16);
@@ -147,7 +145,7 @@ export const generatePdf = async () => {
         const footerY = afterTableY + 25;
         doc.setFontSize(10);
         doc.text(`Capability: ${capability || "-"}`, 15, footerY);
-        doc.text(`Methodology: ${methodology || "-"}`, 15, footerY + 6);
+        doc.text(`Executive Sponsor: ${methodology || "-"}`, 15, footerY + 6);
         doc.text(`Pillar: ${pillar || "-"}`, 15, footerY + 12);
         doc.text(`Email: ${email?.trim() || "N/A"}`, 15, footerY + 18);
 
