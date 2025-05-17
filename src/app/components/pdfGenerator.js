@@ -45,13 +45,10 @@ export const generatePdf = async () => {
         // doc.setFillColor(0, 0, 0);
         // doc.rect(0, 0, 210, 40, "F");
 
-        // Centered Logo - moved slightly down for white background
-        doc.addImage(logo, "PNG", 55, 10, 100, 25);
+        // Centered Logo - moved slightly down for white background, width reduced from 100 to 80
+        doc.addImage(logo, "PNG", 55, 10, 80, 25);
 
-        // PM Network text under logo
-        doc.setTextColor(0, 0, 0); // changed from white to black for visibility on white
-        doc.setFontSize(11);
-        doc.text("PM NETWORK ALLIANCE", 105, 40, { align: "center" });
+        // Removed "PM NETWORK ALLIANCE" text under logo
 
         // Project name
         doc.setFontSize(16);
