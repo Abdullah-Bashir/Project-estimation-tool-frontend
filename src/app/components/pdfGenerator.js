@@ -2,7 +2,6 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getBase64ImageFromUrl } from "./base64Image";
 
 export const generatePdf = async () => {
     try {
@@ -37,27 +36,15 @@ export const generatePdf = async () => {
         }
 
         const doc = new jsPDF();
-        const logo = await getBase64ImageFromUrl(
-            `${window.location.origin}/logo.png`
-        );
 
-        // Removed black header bar
-        // doc.setFillColor(0, 0, 0);
-        // doc.rect(0, 0, 210, 40, "F");
-
-        // Centered Logo - moved slightly down for white background, width reduced from 100 to 80
-        doc.addImage(logo, "PNG", 55, 10, 80, 25);
-
-        // Removed "PM NETWORK ALLIANCE" text under logo
-
-        // Project name
-        doc.setFontSize(16);
+        // Project name at the top center
+        doc.setFontSize(20);
         doc.setFont(undefined, "bold");
         doc.setTextColor(0, 0, 0);
-        doc.text(projectName, 15, 52);
+        doc.text(projectName, 105, 20, { align: "center" });
 
         // Start Y position for dynamic content
-        let nextY = 60;
+        let nextY = 30;
 
         // Summary block
         if (summary) {
@@ -89,19 +76,16 @@ export const generatePdf = async () => {
 
             const exIndex = useCase.indexOf("Ex:");
             if (exIndex !== -1) {
-                // Text before "Ex:"
                 const beforeEx = useCase.substring(0, exIndex).trim();
                 const beforeExLines = doc.splitTextToSize(beforeEx, 150);
                 doc.text(beforeExLines, 40, nextY);
                 nextY += beforeExLines.length * 6 + 2;
 
-                // Text from "Ex:" onwards on next line, same indent as beforeEx
                 const exText = useCase.substring(exIndex).trim();
                 const exLines = doc.splitTextToSize(exText, 150);
                 doc.text(exLines, 40, nextY);
                 nextY += exLines.length * 6 + 4;
             } else {
-                // If no "Ex:" just print whole useCase normally
                 const allLines = doc.splitTextToSize(useCase, 150);
                 doc.text(allLines, 40, nextY);
                 nextY += allLines.length * 6 + 4;
