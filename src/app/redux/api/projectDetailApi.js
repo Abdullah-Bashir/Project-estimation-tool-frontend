@@ -1,30 +1,27 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = "https://project-estimation-tool-backend-production.up.railway.app/api/projects";  // Backend URL
+const BASE_URL = 'http://localhost:5000/api/projects' || 'https://project-estimation-tool-backend-production.up.railway.app/api/projects'
+
 
 export const projectDetailApi = createApi({
-    reducerPath: 'projectDetailApi',  // The name of the slice in the Redux store
-    baseQuery: fetchBaseQuery({
-        baseUrl: API_URL,  // Base URL for API requests
-    }),
-
+    reducerPath: 'projectDetailApi',
+    baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     endpoints: (builder) => ({
 
         // 1️⃣ Create or update project
         createOrUpdateProject: builder.mutation({
             query: (projectData) => {
-                const { _id } = projectData;  // Check if the project already has an _id
-                const url = _id ? `/${_id}` : '/';  // If _id exists, it's an update; otherwise, create new project
-                const method = _id ? 'PUT' : 'POST';  // Use PUT for update, POST for new project
+                const { _id } = projectData;
+                const url = _id ? `/${_id}` : '/';
+                const method = _id ? 'PUT' : 'POST';
 
                 return {
                     url,
                     method,
-                    body: projectData,  // Send the project data as the request body
+                    body: projectData,
                 };
             },
         }),
-
 
         // 2️⃣ Get all projects
         getAllProjects: builder.query({
@@ -32,9 +29,8 @@ export const projectDetailApi = createApi({
                 url: '/',
                 method: 'GET',
             }),
-            transformResponse: (response) => response.data, // Transform response data
+            transformResponse: (response) => response.data,
         }),
-
 
         // 3️⃣ Get project by ID
         getProjectById: builder.query({
@@ -44,8 +40,7 @@ export const projectDetailApi = createApi({
             }),
         }),
 
-
-        // 🛠 Add inside endpoints
+        // 🛠 Delete a project
         deleteProject: builder.mutation({
             query: (id) => ({
                 url: `/${id}`,
@@ -54,21 +49,14 @@ export const projectDetailApi = createApi({
         }),
 
 
-        // 4️⃣ Update project by ID (if needed)
-        updateProject: builder.mutation({
-            query: ({ id, updatedData }) => ({
-                url: `/${id}`,
-                method: 'PUT',
-                body: updatedData,  // Send the updated project data
-            }),
-        }),
     }),
 });
 
+// ✅ Export all hooks
 export const {
-    useCreateOrUpdateProjectMutation,  // Hook for create or update project
-    useGetAllProjectsQuery,  // Hook for getting all projects
-    useGetProjectByIdQuery,  // Hook for getting a project by ID
-    useUpdateProjectMutation,  // Hook for updating a project
+    useCreateOrUpdateProjectMutation,
+    useGetAllProjectsQuery,
+    useGetProjectByIdQuery,
     useDeleteProjectMutation,
+
 } = projectDetailApi;

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useCreateOrUpdateProjectMutation, useGetAllProjectsQuery } from "../redux/api/projectDetailApi";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiChevronDown, FiX, FiAlertCircle } from "react-icons/fi";
+import { useGetDropdownOptionsQuery } from "../redux/api/dropdownOptionsApi";
 
 export default function Reports() {
     const [rockSize, setRockSize] = useState("");
@@ -24,6 +25,7 @@ export default function Reports() {
 
     const [createOrUpdateProject, { isLoading }] = useCreateOrUpdateProjectMutation();
     const { refetch } = useGetAllProjectsQuery();
+    const { data: dropdownOptions, isLoading: isDropdownLoading } = useGetDropdownOptionsQuery();
 
     useEffect(() => {
         if (currentProject?.reports) {
@@ -214,9 +216,27 @@ export default function Reports() {
 
                 {/* Fields */}
                 <div className="mb-8 sm:mb-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                    <EnhancedDropdownField label="Select Capability *" value={capability} onChange={handleCapabilityChange} options={["Build (New capabilities)", "Maintain (Keep lights on)", "Retire (Eliminate capabilities)"]} />
-                    <EnhancedDropdownField label="Select Pillar *" value={pillar} onChange={handlePillarChange} options={["Innovation", "Navigation of Healthcare Reform", "Organizational & Staff", "Participant Engagement", "Strategic Growth"]} />
-                    <EnhancedDropdownField label="Executive Sponsor *" value={methodology} onChange={handleMethodologyChange} options={["Bulmahn, Wayne", "Sheridan, Sabrina", "Riley, Angela", "Krajcinovic, Ivana", "VandeVusse, Joel", "Patel, Dharma"]} />
+                    <EnhancedDropdownField
+                        label="Select Capability *"
+                        value={capability}
+                        onChange={handleCapabilityChange}
+                        options={dropdownOptions?.capability || []}
+                        isLoading={isDropdownLoading}
+                    />
+                    <EnhancedDropdownField
+                        label="Select Pillar *"
+                        value={pillar}
+                        onChange={handlePillarChange}
+                        options={dropdownOptions?.pillar || []}
+                        isLoading={isDropdownLoading}
+                    />
+                    <EnhancedDropdownField
+                        label="Executive Sponsor *"
+                        value={methodology}
+                        onChange={handleMethodologyChange}
+                        options={dropdownOptions?.executiveSponsor || []}
+                        isLoading={isDropdownLoading}
+                    />
                 </div>
 
                 <div className="text-center mb-5">
@@ -238,11 +258,7 @@ export default function Reports() {
     );
 }
 
-
-
-
-
-function EnhancedDropdownField({ label, value, onChange, options }) {
+function EnhancedDropdownField({ label, value, onChange, options, isLoading }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef(null)
 
@@ -265,45 +281,53 @@ function EnhancedDropdownField({ label, value, onChange, options }) {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none flex justify-between items-center text-sm"
                     whileHover={{ borderColor: "#818cf8" }}
+                    disabled={isLoading}
                 >
                     <span className={value ? "text-gray-800 dark:text-gray-200" : "text-gray-400 dark:text-gray-500"}>
-                        {value || `Select ${label.replace(" *", "")}`}
+                        {isLoading ? "Loading..." : (value || `Select ${label.replace(" *", "")}`)}
                     </span>
-                    <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <FiChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-300" />
-                    </motion.div>
+                    {!isLoading && (
+                        <motion.div animate={{ rotate: isDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                            <FiChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-300" />
+                        </motion.div>
+                    )}
                 </motion.button>
 
-                <AnimatePresence>
-                    {isDropdownOpen && (
-                        <motion.ul
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.15, ease: "easeOut" }}
-                            className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                        >
-                            {options.map((opt, i) => (
-                                <motion.li
-                                    key={i}
-                                    className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
-                                    onClick={() => {
-                                        onChange(opt)
-                                        setIsDropdownOpen(false)
-                                    }}
-                                    whileHover={{ backgroundColor: "#eef2ff", x: 2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                >
-                                    {opt}
-                                </motion.li>
-                            ))}
-                        </motion.ul>
-                    )}
-                </AnimatePresence>
+                {!isLoading && (
+                    <AnimatePresence>
+                        {isDropdownOpen && (
+                            <motion.ul
+                                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.15, ease: "easeOut" }}
+                                className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                            >
+                                {options.map((opt, i) => (
+                                    <motion.li
+                                        key={i}
+                                        className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
+                                        onClick={() => {
+                                            onChange(opt)
+                                            setIsDropdownOpen(false)
+                                        }}
+                                        whileHover={{ backgroundColor: "#eef2ff", x: 2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                    >
+                                        {opt}
+                                    </motion.li>
+                                ))}
+                            </motion.ul>
+                        )}
+                    </AnimatePresence>
+                )}
             </div>
         </div>
     )
 }
+
+
+
 
 function ValidationModal({ isOpen, onClose, missingFields }) {
     return (
@@ -431,7 +455,6 @@ function RockSizeModal({ isModalOpen, setIsModalOpen, rockSize, useCase, tasks }
         </AnimatePresence>
     );
 }
-
 
 // Helper compact field
 function FieldRow({ label, value, italic = false }) {
