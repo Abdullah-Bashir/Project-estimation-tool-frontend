@@ -1,9 +1,12 @@
+// pages/adminPanel.tsx
 'use client';
 import React, { useState } from 'react';
 import { FiSave, FiPlus, FiTrash2, FiEdit2, FiRefreshCw } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useGetDropdownOptionsQuery, useUpdateDropdownOptionsMutation } from '@/app/redux/api/dropdownOptionsApi';
 import { Loader } from 'lucide-react';
+import LoginForm from './components/loginForm';
+import ChangePassword from './components/changePassword';
 import { ToastContainer } from 'react-toastify';
 
 const fadeIn = {
@@ -20,6 +23,9 @@ const fadeIn = {
 };
 
 const AdminPanel = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
+
     const {
         data: options = {
             capability: [],
@@ -29,11 +35,15 @@ const AdminPanel = () => {
         isLoading,
         isError,
         refetch
-    } = useGetDropdownOptionsQuery();
+    } = useGetDropdownOptionsQuery(undefined, { skip: !isAuthenticated });
 
     const [updateDropdownOptions, { isLoading: isUpdating }] = useUpdateDropdownOptionsMutation();
     const [editing, setEditing] = useState({ field: null, index: null, value: '' });
     const [newItems, setNewItems] = useState({ capability: '', pillar: '', executiveSponsor: '' });
+
+    const handleLoginSuccess = () => {
+        setIsAuthenticated(true);
+    };
 
     const handleAddItem = async (field) => {
         const value = newItems[field].trim();
@@ -168,8 +178,18 @@ const AdminPanel = () => {
         </motion.div>
     );
 
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+                <LoginForm onLoginSuccess={handleLoginSuccess} />
+            </div>
+        );
+    }
+
     if (isLoading) return (
-        <Loader />
+        <div className="min-h-screen flex items-center justify-center">
+            <Loader className="animate-spin" />
+        </div>
     );
 
     if (isError) return (
@@ -196,16 +216,33 @@ const AdminPanel = () => {
         >
             <ToastContainer />
 
+            {/* Add the ChangePassword modal */}
+            {showChangePassword && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <ChangePassword onClose={() => setShowChangePassword(false)} />
+                </div>
+            )}
+
             <div className="max-w-4xl mx-auto">
                 {/* Page Heading */}
-                <motion.h1
-                    className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                >
-                    Admin Panel
-                </motion.h1>
+                <div className="flex justify-between items-center mb-4">
+                    <motion.h1
+                        className="text-4xl font-bold text-gray-900 dark:text-white"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        Admin Panel
+                    </motion.h1>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowChangePassword(true)}
+                        className="hover:bg-gray-300 bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg"
+                    >
+                        Change Password
+                    </motion.button>
+                </div>
 
                 <motion.p
                     className="text-center text-gray-600 dark:text-gray-400 mb-8"
