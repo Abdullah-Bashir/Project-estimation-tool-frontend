@@ -8,6 +8,8 @@ import { Loader } from 'lucide-react';
 import LoginForm from './components/loginForm';
 import ChangePassword from './components/changePassword';
 import { ToastContainer } from 'react-toastify';
+import { FiArrowLeft } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 
 const fadeIn = {
     hidden: { opacity: 0, y: 30 },
@@ -25,6 +27,7 @@ const fadeIn = {
 const AdminPanel = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
+    const router = useRouter()
 
     const {
         data: options = {
@@ -74,6 +77,10 @@ const AdminPanel = () => {
             console.error('Remove Error:', error);
             alert('Failed to remove item');
         }
+    };
+
+    const handleBack = () => {
+        router.push('/');
     };
 
     const startEditing = (field, index) => {
@@ -224,16 +231,28 @@ const AdminPanel = () => {
             )}
 
             <div className="max-w-4xl mx-auto">
+
                 {/* Page Heading */}
                 <div className="flex justify-between items-center mb-4">
-                    <motion.h1
-                        className="text-4xl font-bold text-gray-900 dark:text-white"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        Admin Panel
-                    </motion.h1>
+                    <div className="flex items-center gap-4">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleBack}
+                            className="hover:bg-gray-300 bg-gray-200 dark:hover:bg-gray-600 p-2 rounded-lg"
+                            title="Back to Home"
+                        >
+                            <FiArrowLeft className="w-5 h-5" />
+                        </motion.button>
+                        <motion.h1
+                            className="text-4xl font-bold text-gray-900 dark:text-white"
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                        >
+                            Admin Panel
+                        </motion.h1>
+                    </div>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -243,7 +262,6 @@ const AdminPanel = () => {
                         Change Password
                     </motion.button>
                 </div>
-
                 <motion.p
                     className="text-center text-gray-600 dark:text-gray-400 mb-8"
                     initial={{ opacity: 0 }}
@@ -276,6 +294,7 @@ const AdminPanel = () => {
                     {renderOptionList('executiveSponsor', 'Executive Sponsor')}
                 </div>
             </div>
+
         </motion.div>
     );
 };

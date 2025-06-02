@@ -13,6 +13,9 @@ import MobileNavigation from "./components/MobileNavigation";
 import { useGetAllProjectsQuery, useDeleteProjectMutation } from "@/app/redux/api/projectDetailApi";
 import { FiChevronDown } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { MdAdminPanelSettings } from "react-icons/md";
+import { useRouter } from "next/navigation";
+
 
 const createEmptyProject = () => ({
   title: "New Project",
@@ -51,6 +54,7 @@ export default function Home() {
   const [deleteProject] = useDeleteProjectMutation();
 
   const dropdownRef = useRef();
+  const router = useRouter()
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -174,6 +178,10 @@ export default function Home() {
     window.location.reload();
   };
 
+  const handleAdmin = () => {
+    router.push("/admin")
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard": return <Dashboard />;
@@ -197,146 +205,143 @@ export default function Home() {
     );
   }
 
- return (
-  <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
+  return (
+    <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
 
-    {/* Header */}
-    <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
-      <div className="flex items-center justify-between w-full">
+      {/* Header */}
+      <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
+        <div className="flex items-center justify-between w-full">
 
-        <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+          <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-3 relative mt-2" ref={dropdownRef}>
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
-            <img src="/logo.png" alt="Logo" className="md:h-10 md:w-50 h-8 w-30" />
-            <FiChevronDown className="text-xl" />
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 relative mt-2" ref={dropdownRef}>
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
+              <img src="/logo.png" alt="Logo" className="md:h-10 md:w-50 h-8 w-30" />
+              <FiChevronDown className="text-xl" />
+            </div>
+
+            {isEditing ? (
+              <input
+                type="text"
+                value={projectName}
+                onChange={handleProjectNameChange}
+                onBlur={handleBlur}
+                onKeyPress={handleKeyPress}
+                autoFocus
+                className="w-full max-w-[250px] sm:max-w-none text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
+                placeholder="Enter Project Name"
+              />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors"
+                onClick={handleEditClick}
+              >
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
+                <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              </motion.div>
+            )}
+
+            {showDropdown && (
+              <motion.ul
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute top-14 left-0 w-52 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden z-50"
+              >
+                {projects.map((project) => (
+                  <li
+                    key={project._id}
+                    className="flex justify-between items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
+                  >
+                    <span
+                      onClick={() => {
+                        setProjectName(project.title);
+                        setSummary(project.reports?.summary || "");
+                        setRockSize(project.reports?.rockSize || "");
+                        localStorage.setItem("currentProject", JSON.stringify(project));
+                        window.dispatchEvent(new CustomEvent("customStorageChange", {
+                          detail: { key: "currentProject", newValue: JSON.stringify(project) },
+                        }));
+                        setShowDropdown(false);
+                      }}
+                      className="flex-1"
+                    >
+                      {project.title}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProject(project._id);
+                      }}
+                      className="text-red-500 hover:text-red-700 ml-2"
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
           </div>
 
-          {isEditing ? (
-            <input
-              type="text"
-              value={projectName}
-              onChange={handleProjectNameChange}
-              onBlur={handleBlur}
-              onKeyPress={handleKeyPress}
-              autoFocus
-              className="w-full max-w-[250px] sm:max-w-none text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
-              placeholder="Enter Project Name"
-            />
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors"
-              onClick={handleEditClick}
-            >
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
-              <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </motion.div>
-          )}
-
-          {showDropdown && (
-            <motion.ul
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute top-14 left-0 w-52 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden z-50"
-            >
-              {projects.map((project) => (
-                <li
-                  key={project._id}
-                  className="flex justify-between items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium"
-                >
-                  <span
-                    onClick={() => {
-                      setProjectName(project.title);
-                      setSummary(project.reports?.summary || "");
-                      setRockSize(project.reports?.rockSize || "");
-                      localStorage.setItem("currentProject", JSON.stringify(project));
-                      window.dispatchEvent(new CustomEvent("customStorageChange", {
-                        detail: { key: "currentProject", newValue: JSON.stringify(project) },
-                      }));
-                      setShowDropdown(false);
-                    }}
-                    className="flex-1"
-                  >
-                    {project.title}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteProject(project._id);
-                    }}
-                    className="text-red-500 hover:text-red-700 ml-2"
-                  >
-                    🗑️
-                  </button>
-                </li>
-              ))}
-            </motion.ul>
-          )}
-        </div>
-
-        <div className="ml-0 sm:ml-4">
-          <ThemeToggle />
-        </div>
-      </div>
-    </div>
-
-    {/* Static Content + Tabs (Left) and Summary (Right) */}
-    <div className="w-full flex flex-col md:flex-row justify-between items-start md:px-10 px-4 mt-2 mb-4 gap-4">
-
-      {/* Left Side */}
-      <div className="md:w-2/3 w-full">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-1">Project Sizing Estimation Tool</h2>
-        <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base mb-4">
-          Streamline early-stage planning by collecting effort and size estimates from teams to assess project scope.
-        </p>
-
-        <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
-          <TabButton icon={<MdOutlineDashboard />} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
-          <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
-          <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
-          <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
+          <div className="ml-0 sm:ml-4">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
-      {/* Right Side: Summary & Rock Size */}
-      <div className="w-full md:w-[300px] flex flex-col">
-        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
-        <textarea
-          value={summary}
-          onChange={handleSummaryChange}
-          placeholder="Write project summary..."
-          rows={4}
-          className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
-        />
+      {/* Static Content + Tabs (Left) and Summary (Right) */}
+      <div className="w-full flex flex-col md:flex-row justify-between items-start md:px-10 px-4 mt-2 mb-4 gap-4">
 
-        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-1">Project Rock Size</label>
-        <input
-          type="text"
-          value={rockSize}
-          disabled
-          className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white cursor-not-allowed"
-        />
+        {/* Left Side */}
+        <div className="md:w-2/3 w-full">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1">Project Sizing Estimation Tool</h2>
+          <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base mb-4">
+            Streamline early-stage planning by collecting effort and size estimates from teams to assess project scope.
+          </p>
+
+          <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
+            <TabButton icon={<MdOutlineDashboard />} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
+            <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
+            <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
+            <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
+            <TabButton icon={<MdAdminPanelSettings />} label="Admin" isActive={false} onClick={handleAdmin} />
+          </div>
+        </div>
+
+        {/* Right Side: Summary & Rock Size */}
+        <div className="w-full md:w-[300px] flex flex-col">
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
+          <textarea
+            value={summary}
+            onChange={handleSummaryChange}
+            placeholder="Write project summary..."
+            rows={4}
+            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
+          />
+
+          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-1">Project Rock Size</label>
+          <input
+            type="text"
+            value={rockSize}
+            disabled
+            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white cursor-not-allowed"
+          />
+        </div>
+      </div>
+
+      {/* Dynamic Content */}
+      <div className="w-full sm:px-4 rounded-2xl mb-6">
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
-
-    {/* Dynamic Content */}
-    <div className="w-full sm:px-4 rounded-2xl mb-6">
-      <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
-          {renderContent()}
-        </motion.div>
-      </AnimatePresence>
-    </div>
-  </div>
-);
-
-
-
+  );
 }
-
 
 
 
