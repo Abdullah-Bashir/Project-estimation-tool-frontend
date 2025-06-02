@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = "http://localhost:5000/api/dropdown-options"
+const API_URL = "https://project-estimation-tool-backend-production.up.railway.app/api/dropdown-options"
 
 export const dropdownOptionsApi = createApi({
     reducerPath: 'dropdownOptionsApi',
