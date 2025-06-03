@@ -177,11 +177,6 @@ export default function Home() {
     setProjectName(newProject.title);
     window.location.reload();
   };
-
-  const handleAdmin = () => {
-    router.push("/admin")
-  }
-
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard": return <Dashboard />;
@@ -305,7 +300,7 @@ export default function Home() {
             <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
             <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
             <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
-            <TabButton icon={<MdAdminPanelSettings />} label="Admin" isActive={false} onClick={handleAdmin} />
+
           </div>
         </div>
 
