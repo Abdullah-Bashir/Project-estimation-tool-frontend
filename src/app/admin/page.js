@@ -1,4 +1,4 @@
-// pages/adminPanel.tsx
+// pages/adminPanel.js
 'use client';
 import React, { useState } from 'react';
 import { FiSave, FiPlus, FiTrash2, FiEdit2, FiRefreshCw } from 'react-icons/fi';
@@ -33,7 +33,8 @@ const AdminPanel = () => {
         data: options = {
             capability: [],
             pillar: [],
-            executiveSponsor: []
+            executiveSponsor: [],
+            departments: []
         },
         isLoading,
         isError,
@@ -42,7 +43,12 @@ const AdminPanel = () => {
 
     const [updateDropdownOptions, { isLoading: isUpdating }] = useUpdateDropdownOptionsMutation();
     const [editing, setEditing] = useState({ field: null, index: null, value: '' });
-    const [newItems, setNewItems] = useState({ capability: '', pillar: '', executiveSponsor: '' });
+    const [newItems, setNewItems] = useState({ 
+        capability: '', 
+        pillar: '', 
+        executiveSponsor: '', 
+        departments: '' 
+    });
 
     const handleLoginSuccess = () => {
         setIsAuthenticated(true);
@@ -292,9 +298,9 @@ const AdminPanel = () => {
                     {renderOptionList('capability', 'Capability')}
                     {renderOptionList('pillar', 'Pillar')}
                     {renderOptionList('executiveSponsor', 'Executive Sponsor')}
+                    {renderOptionList('departments', 'Department')}
                 </div>
             </div>
-
         </motion.div>
     );
 };

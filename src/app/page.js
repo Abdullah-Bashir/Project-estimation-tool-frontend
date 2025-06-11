@@ -10,12 +10,16 @@ import Tasks from "@/app/components/Tasks";
 import Reports from "@/app/components/Reports";
 import ThemeToggle from "./components/ThemeToggle";
 import MobileNavigation from "./components/MobileNavigation";
-import { useGetAllProjectsQuery, useDeleteProjectMutation } from "@/app/redux/api/projectDetailApi";
+import {
+  useGetAllProjectsQuery,
+  useDeleteProjectMutation,
+} from "@/app/redux/api/projectDetailApi";
 import { FiChevronDown } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { MdAdminPanelSettings } from "react-icons/md";
 import { useRouter } from "next/navigation";
-
+import { TfiWrite } from "react-icons/tfi";
+import Summary from "./components/summary";
 
 const createEmptyProject = () => ({
   title: "New Project",
@@ -37,7 +41,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState(null);
   const [loading, setLoading] = useState(true);
   const [projectName, setProjectName] = useState("Project Name");
-  const [summary, setSummary] = useState("");
   const [rockSize, setRockSize] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -54,7 +57,7 @@ export default function Home() {
   const [deleteProject] = useDeleteProjectMutation();
 
   const dropdownRef = useRef();
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -68,7 +71,9 @@ export default function Home() {
   }, []);
 
   const handleDeleteProject = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this project?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this project?"
+    );
     if (!confirmDelete) return;
 
     try {
@@ -80,14 +85,17 @@ export default function Home() {
         const newProject = createEmptyProject();
         localStorage.setItem("currentProject", JSON.stringify(newProject));
         localStorage.setItem("tasks", JSON.stringify([]));
-        localStorage.setItem("newTask", JSON.stringify({
-          title: "",
-          hours: 0,
-          resources: 1,
-          duration: 1,
-          comment: "",
-          department: "",
-        }));
+        localStorage.setItem(
+          "newTask",
+          JSON.stringify({
+            title: "",
+            hours: 0,
+            resources: 1,
+            duration: 1,
+            comment: "",
+            department: "",
+          })
+        );
       }
 
       setShowDropdown(false);
@@ -110,9 +118,8 @@ export default function Home() {
     if (storedProject) {
       const project = JSON.parse(storedProject);
       setProjectName(project.title || "Project Name");
-      setSummary(project.reports.summary || "");
-      setRockSize(project.reports.rockSize || "");
-      setTasks(project.reports.tasks || []);
+      setRockSize(project.reports?.rockSize || "");
+      setTasks(project.reports?.tasks || []);
     }
 
     if (storedTasks) setTasks(JSON.parse(storedTasks));
@@ -125,13 +132,16 @@ export default function Home() {
     const handleCustomStorageChange = (event) => {
       if (event.detail.key === "currentProject") {
         const updatedProject = JSON.parse(event.detail.newValue);
-        setSummary(updatedProject.reports?.summary || "");
         setRockSize(updatedProject.reports?.rockSize || "");
       }
     };
 
     window.addEventListener("customStorageChange", handleCustomStorageChange);
-    return () => window.removeEventListener("customStorageChange", handleCustomStorageChange);
+    return () =>
+      window.removeEventListener(
+        "customStorageChange",
+        handleCustomStorageChange
+      );
   }, []);
 
   useEffect(() => {
@@ -147,29 +157,11 @@ export default function Home() {
     localStorage.setItem("currentProject", JSON.stringify(updatedProject));
   };
 
-  const handleSummaryChange = (e) => {
-    const newSummary = e.target.value;
-    setSummary(newSummary);
-
-    const storedProject = localStorage.getItem("currentProject");
-    if (!storedProject) return;
-
-    const project = JSON.parse(storedProject);
-    if (!project.reports) project.reports = {};
-    project.reports.summary = newSummary;
-
-    localStorage.setItem("currentProject", JSON.stringify(project));
-
-    window.dispatchEvent(
-      new CustomEvent("customStorageChange", {
-        detail: { key: "currentProject", newValue: JSON.stringify(project) },
-      })
-    );
-  };
-
   const handleEditClick = () => setIsEditing(true);
   const handleBlur = () => setIsEditing(false);
-  const handleKeyPress = (e) => { if (e.key === "Enter") handleBlur(); };
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") handleBlur();
+  };
 
   const handleCreateProject = () => {
     const newProject = createEmptyProject();
@@ -177,22 +169,49 @@ export default function Home() {
     setProjectName(newProject.title);
     window.location.reload();
   };
+
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": return <Dashboard />;
-      case "tasks": return <Tasks tasks={tasks} setTasks={setTasks} newTask={newTask} setNewTask={setNewTask} />;
-      case "reports": return <Reports />;
-      default: return null;
+      case "dashboard":
+        return <Dashboard />;
+      case "tasks":
+        return (
+          <Tasks
+            tasks={tasks}
+            setTasks={setTasks}
+            newTask={newTask}
+            setNewTask={setNewTask}
+          />
+        );
+      case "reports":
+        return <Reports />;
+      case "summary":
+        return <Summary tasks={tasks} />;
+      default:
+        return null;
     }
   };
-
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 transition-all">
-        <motion.div className="flex flex-col items-center gap-6" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, ease: "easeOut" }}>
-          <motion.div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} />
-          <motion.p className="text-gray-600 dark:text-gray-300 font-semibold tracking-wide text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }}>
+        <motion.div
+          className="flex flex-col items-center gap-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.div
+            className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          />
+          <motion.p
+            className="text-gray-600 dark:text-gray-300 font-semibold tracking-wide text-lg"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
             Project Manager Loading...
           </motion.p>
         </motion.div>
@@ -202,40 +221,51 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-white transition-all duration-300 relative px-2">
-
       {/* Header */}
       <div className="w-full flex flex-col sm:flex-row justify-between items-center md:mb-4 gap-4 py-2 md:px-8 px-4">
         <div className="flex items-center justify-between w-full">
-
           <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          <div className="flex flex-row items-center justify-center gap-2 relative mt-2" ref={dropdownRef}>
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowDropdown(prev => !prev)}>
+          <div
+            className="flex flex-row items-center justify-center gap-2 relative mt-2"
+            ref={dropdownRef}
+          >
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setShowDropdown((prev) => !prev)}
+            >
               <FiChevronDown className="text-xl" />
             </div>
 
             {isEditing ? (
-              <input
-                type="text"
-                value={projectName}
-                onChange={handleProjectNameChange}
-                onBlur={handleBlur}
-                onKeyPress={handleKeyPress}
-                autoFocus
-                className="w-full max-w-[250px] sm:max-w-none text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
-                placeholder="Enter Project Name"
-              />
+              <div className="flex items-center gap-4">
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={handleProjectNameChange}
+                  onBlur={handleBlur}
+                  onKeyPress={handleKeyPress}
+                  autoFocus
+                  className="w-full max-w-[250px] sm:max-w-none text-2xl sm:text-3xl font-bold bg-transparent border-b-2 border-indigo-500 focus:outline-none pb-1 dark:text-white placeholder-gray-400"
+                  placeholder="Enter Project Name"
+                />
+              </div>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center gap-2 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-4 cursor-text hover:bg-gray-100 dark:hover:bg-gray-800/50 px-2 py-2 rounded-lg transition-colors"
                 onClick={handleEditClick}
               >
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">{projectName}</h1>
-                <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+                    {projectName}
+                  </h1>
+                  <HiOutlinePencil className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </div>
               </motion.div>
             )}
+
 
             {showDropdown && (
               <motion.ul
@@ -252,12 +282,19 @@ export default function Home() {
                     <span
                       onClick={() => {
                         setProjectName(project.title);
-                        setSummary(project.reports?.summary || "");
                         setRockSize(project.reports?.rockSize || "");
-                        localStorage.setItem("currentProject", JSON.stringify(project));
-                        window.dispatchEvent(new CustomEvent("customStorageChange", {
-                          detail: { key: "currentProject", newValue: JSON.stringify(project) },
-                        }));
+                        localStorage.setItem(
+                          "currentProject",
+                          JSON.stringify(project)
+                        );
+                        window.dispatchEvent(
+                          new CustomEvent("customStorageChange", {
+                            detail: {
+                              key: "currentProject",
+                              newValue: JSON.stringify(project),
+                            },
+                          })
+                        );
                         setShowDropdown(false);
                       }}
                       className="flex-1"
@@ -285,50 +322,73 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Static Content + Tabs (Left) and Summary (Right) */}
+      {/* Static Content + Tabs (Left) */}
       <div className="w-full flex flex-col md:flex-row justify-between items-start md:px-10 px-4 mt-2 mb-4 gap-4">
-
         {/* Left Side */}
-        <div className="md:w-2/3 w-full">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-1">Project Sizing Estimation Tool</h2>
+        <div className="w-full">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-1">
+            Project Sizing Estimation Tool
+          </h2>
           <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base mb-4">
-            Streamline early-stage planning by collecting effort and size estimates from teams to assess project scope.
+            Streamline early-stage planning by collecting effort and size
+            estimates from teams to assess project scope.
           </p>
 
-          <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
-            <TabButton icon={<MdOutlineDashboard />} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
-            <TabButton icon={<FaTasks />} label="Estimator" isActive={activeTab === "tasks"} onClick={() => setActiveTab("tasks")} />
-            <TabButton icon={<HiOutlineDocumentReport />} label="Reports" isActive={activeTab === "reports"} onClick={() => setActiveTab("reports")} />
-            <TabButton icon={<FaPlus />} label="Create Project" isActive={false} onClick={handleCreateProject} />
-
+          <div className="flex justify-around">
+            <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
+              <TabButton
+                icon={<MdOutlineDashboard />}
+                label="Dashboard"
+                isActive={activeTab === "dashboard"}
+                onClick={() => setActiveTab("dashboard")}
+              />
+              <TabButton
+                icon={<FaTasks />}
+                label="Estimator"
+                isActive={activeTab === "tasks"}
+                onClick={() => setActiveTab("tasks")}
+              />
+              <TabButton
+                icon={<HiOutlineDocumentReport />}
+                label="Reports"
+                isActive={activeTab === "reports"}
+                onClick={() => setActiveTab("reports")}
+              />
+              <TabButton
+                icon={<TfiWrite />}
+                label="Summary"
+                isActive={activeTab === "summary"}
+                onClick={() => setActiveTab("summary")}
+              />
+              <TabButton
+                icon={<FaPlus />}
+                label="Create Project"
+                isActive={false}
+                onClick={handleCreateProject}
+              />
+            </div>
+            <div>
+              {rockSize && (
+                  <div className="bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full text-sm font-medium text-blue-800 dark:text-blue-200">
+                    Rock Size: {rockSize}
+                  </div>
+                )}
+            </div>
           </div>
-        </div>
 
-        {/* Right Side: Summary & Rock Size */}
-        <div className="w-full md:w-[300px] flex flex-col">
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Project Summary</label>
-          <textarea
-            value={summary}
-            onChange={handleSummaryChange}
-            placeholder="Write project summary..."
-            rows={4}
-            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
-          />
-
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-4 mb-1">Project Rock Size</label>
-          <input
-            type="text"
-            value={rockSize}
-            disabled
-            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white cursor-not-allowed"
-          />
         </div>
       </div>
 
       {/* Dynamic Content */}
       <div className="w-full sm:px-4 rounded-2xl mb-6">
         <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+          >
             {renderContent()}
           </motion.div>
         </AnimatePresence>
@@ -337,14 +397,15 @@ export default function Home() {
   );
 }
 
-
-
 function TabButton({ icon, label, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer ${isActive ? "bg-[#003399] text-white" : "bg-white dark:bg-gray-800 text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        }`}
+      className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer ${
+        isActive
+          ? "bg-[#003399] text-white"
+          : "bg-white dark:bg-gray-800 text-black dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+      }`}
     >
       <span className="text-lg">{icon}</span>
       <span className="text-base font-semibold">{label}</span>
