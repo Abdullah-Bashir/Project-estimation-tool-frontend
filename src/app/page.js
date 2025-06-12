@@ -334,7 +334,7 @@ export default function Home() {
             estimates from teams to assess project scope.
           </p>
 
-          <div className="flex justify-around">
+          <div className="flex justify-between">
             <div className="hidden md:flex flex-wrap gap-2 md:gap-4">
               <TabButton
                 icon={<MdOutlineDashboard />}
