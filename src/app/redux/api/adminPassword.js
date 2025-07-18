@@ -1,7 +1,7 @@
 // src/features/api/adminApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_URL = "https://project-estimation-tool-backend-production.up.railway.app/api/admin";
+const API_URL = "https://backend.initialscope.com/api/admin";
 
 export const adminApi = createApi({
     reducerPath: 'adminApi',

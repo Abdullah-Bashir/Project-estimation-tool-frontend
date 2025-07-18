@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const BASE_URL = 'https://project-estimation-tool-backend-production.up.railway.app/api/projects'
+const BASE_URL = 'https://backend.initialscope.com/api/projects'
 
 export const projectDetailApi = createApi({
     reducerPath: 'projectDetailApi',
